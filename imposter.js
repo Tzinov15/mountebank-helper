@@ -1,5 +1,9 @@
 'use strict'
 
+
+// TODO: Create more functionality to reflect funcitonaility provided by mountebank API. (delete all imposters, get imposterm etc)
+// TODO: Write some unit tests for this stuff
+// TODO: Make an interactive program that allows for quick and easy manipulation of imposters including updating responses, headers, and predicates
 const util = require('util');
 const fetch = require('node-fetch');
 const _ = require('lodash');
@@ -118,6 +122,12 @@ class Imposter {
     // post it again
     fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
   }
+
+
+  /**
+   * This will take the current imposter from the Mountebank server, delete it, update the (this) Imposter instance, and then post it again to the mb server
+   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
+   */
   updateResponseBody(newBody, stubIndex, responseIndex) {
     var previousResponseIndex = responseIndex || 0;
     var previousStubIndex = stubIndex || 0;
@@ -130,13 +140,17 @@ class Imposter {
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.body = newBody;
 
     // post it again
-    fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
+    return fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
   }
 
   printCurrentStubs(){
     console.log(JSON.stringify(this.complete_response.stubs, null, 3));
   }
 
+  /**
+   * This will take the current Imposter object (this) and make the POST request to the mountebank server to create the new imposter
+   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
+   */
   postToMountebank ()
   {
     var fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
