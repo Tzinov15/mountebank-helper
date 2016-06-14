@@ -4,7 +4,6 @@
 // TODO: Create more functionality to reflect funcitonaility provided by mountebank API. (delete all imposters, get imposterm etc)
 // TODO: Write some unit tests for this stuff
 // TODO: Make an interactive program that allows for quick and easy manipulation of imposters including updating responses, headers, and predicates
-
 // NOTE: Should objects be passed around as strings or as objects?
 
 const fetch = require('node-fetch');
@@ -83,6 +82,7 @@ class Imposter {
   /**
    * This takes in our swagger-like representation of our route information (RouteInformation) and coverts
    * it into a mountebank-style format (CompleteResponse) which includes the necassary stubs, formatting, etc
+   *  @return {null} returns nothing
    */
   createMBPostRequestBody() {
     for (const route in this.RouteInformation) {
@@ -244,3 +244,4 @@ function startMbServer() {
 }
 
 module.exports.Imposter = Imposter;
+module.exports.startMbServer = startMbServer;
