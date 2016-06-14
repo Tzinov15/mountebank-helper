@@ -218,6 +218,7 @@ class Imposter {
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
   postToMountebank() {
+    this.createMBPostRequestBody();
     const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.CompleteResponse) });
     return fetchReturnValue;
   }
