@@ -12,7 +12,7 @@ function returnResponsesForAllVerbs(uri) {
         'res' : {
           'statusCode': 200,
           'responseHeaders' : { 'Content-Type' : 'application/json' },
-          'responseBody' : JSON.stringify({ 'verb' : verb })
+          'responseBody' : JSON.stringify({ [uri] : verb })
         }
       });
   });
@@ -20,8 +20,6 @@ function returnResponsesForAllVerbs(uri) {
 
   return responseArray;
 }
-
-
 
 
 module.exports.returnResponsesForAllVerbs = returnResponsesForAllVerbs;
