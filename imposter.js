@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 
 // TODO: Create more functionality to reflect funcitonaility provided by mountebank API. (delete all imposters, get imposterm etc)
@@ -7,9 +7,9 @@
 
 // NOTE: Should objects be passed around as strings or as objects?
 
-const util = require('util');
 const fetch = require('node-fetch');
 const _ = require('lodash');
+const mb = require('mountebank');
 
 class Imposter {
   /**
@@ -27,9 +27,9 @@ class Imposter {
     }
     /* This is the skeleton on to which stubs (predicates + responses) will be added/updatd dynamically */
     this.complete_response = {
-      "port": port,
-      "protocol": protocol,
-      "stubs": []
+      'port': port,
+      'protocol': protocol,
+      'stubs': []
     };
   }
 
@@ -50,8 +50,8 @@ class Imposter {
     if (!_.isString(body)) {
       throw new TypeError('body must be a string');
     }
-    var finalResponse = {};
-    var response = {};
+    const finalResponse = {};
+    const response = {};
 
     response.statuscode = statuscode;
     response.headers = headers;
@@ -64,7 +64,7 @@ class Imposter {
   /**
    * This will take in the users desired predicate components and construct a mounte-bank style predicate
    * @param  {String} operator   The operator to be used as part of this predicate (see mountebank predicate documentation for list of available operators)
-   * @param  {Object} body       The body of the predicate. Often contains information on what conditions are to be met for a match on incoming request
+   * @param  {Object} predicateBody       The body of the predicate. Often contains information on what conditions are to be met for a match on incoming request
    * @return {Object}            The mountebank-formatted prediate object that can be added as part of a mountebank stub
    */
   static createPredicate(operator, predicateBody) {
@@ -74,7 +74,7 @@ class Imposter {
     if (!_.isObject(predicateBody)) {
       throw new TypeError('predicateBody must be an object');
     }
-    var predicate = {};
+    const predicate = {};
     predicate[operator] = predicateBody;
     return predicate;
   }
@@ -83,9 +83,9 @@ class Imposter {
    * Adds a new stub containing arrays of predicates and responses to the skeleton for our imposter POST request body
    * @param {Object} predicate A predicate object constructed using the above createPredicate method
    * @param {Object} response   A response object constructed using the above createResponse method
+   * @return {null}  nothing  Returns nothing
    */
-  addNewStub(predicate, response)
-  {
+  addNewStub(predicate, response) {
     this.complete_response.stubs.push({
       predicates:[predicate],
       responses: [response]
@@ -97,33 +97,33 @@ class Imposter {
   // TODO: Possibly make an extra version of this method that isn't called on this, but instead is static and would take in another parameter port
   // that will uniquely identify the imposter that is to be updated
   updateResponseCode(newCode, stubIndex, responseIndex) {
-    var previousResponseIndex = responseIndex || 0;
-    var previousStubIndex = stubIndex || 0;
+    const previousResponseIndex = responseIndex || 0;
+    const previousStubIndex = stubIndex || 0;
 
     // delete the old imposter
-    var imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`
-    fetch(imposterDeleteRoute, {method: 'DELETE'});
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`
+    fetch(imposterDeleteRoute, { method: 'DELETE' });
 
     // update it
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.statusCode = newCode;
 
     // post it again
-    fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
+    fetch('http://127.0.0.1:2525/imposters', { imethod: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
   }
 
   updateResponseHeaders(newHeaders, stubIndex, responseIndex) {
-    var previousResponseIndex = responseIndex || 0;
-    var previousStubIndex = stubIndex || 0;
+    const previousResponseIndex = responseIndex || 0;
+    const previousStubIndex = stubIndex || 0;
 
     // delete the old imposter
-    var imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/$ {this.complete_response.port }`
     fetch(imposterDeleteRoute, {method: 'DELETE'});
 
     // update it
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.headers = newHeaders;
 
     // post it again
-    fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
+    fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
   }
 
 
@@ -140,26 +140,38 @@ class Imposter {
     fetch(imposterDeleteRoute, {method: 'DELETE'});
 
     // update it
+    console.log(require('util').inspect(this, { depth: null }));;
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.body = newBody;
 
     // post it again
-    return fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
+    return fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
   }
 
   printCurrentStubs(){
-    console.log(JSON.stringify(this.complete_response.stubs, null, 3));
+    console.log(JSON.stringify(this.complete_response, null, 3));
   }
 
   /**
    * This will take the current Imposter object (this) and make the POST request to the mountebank server to create the new imposter
    * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
    */
-  postToMountebank ()
-  {
-    var fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { "Content-Type" : "application/json" }, body: JSON.stringify(this.complete_response)});
+  postToMountebank() {
+    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
     return fetchReturnValue;
   }
 
+  // NOTE: This should obviously be a static method (not really tied to any one instance of an imposter) but should it be here in this class?
+  static start_mb_server() {
+    var mbCreateResult = mb.create({
+      port           : 2525,
+      pidfile        : './mb.pid',
+      logfile        : './mb.log',
+      loglevel       : 'error',
+      mock           : true,
+      allowInjection : true,
+    });
+    return mbCreateResult;
+  }
 }
 
 module.exports = Imposter;
