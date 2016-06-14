@@ -1,7 +1,15 @@
-const expect = require('chai').expect;
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
+const expect = chai.expect;
 
 
-const Imposter = require('../imposter')
+const Imposter = require('../imposter');
+const testStubs = require('./testStubs');
+
+
+// TODO: Also check for object properties on final response body
 
 
 describe ('Input Validation', function(){
@@ -67,7 +75,7 @@ describe ('Input Validation', function(){
           Imposter.createPredicate("expect", JSON.stringify({ "method" : "get", "path" : "/newpage" }));
       }).to.throw('predicateBody must be an object');
     });
-    
+
     it('Should NOT throw if proper arguments are specified', function(){
       expect(function() {
           Imposter.createPredicate("expect", { "method" : "get", "path" : "/newpage" });
@@ -75,3 +83,34 @@ describe ('Input Validation', function(){
     });
   })
 });
+
+
+describe('Construction of Predicates, Responses, Stubs', function() {
+
+  it('Construction of Predicate should return properly formatted predicate', function() {
+    expect(JSON.stringify(Imposter.createPredicate("equals", { "method" : "get", "path" : "/newpage" }))).to.equal(JSON.stringify(testStubs.samplePredicate));
+  });
+
+  it('Construction of Response should return properly formatted response', function() {
+    expect(JSON.stringify(Imposter.createResponse(200, {"Content-Type" : "application/json"}, JSON.stringify({"hello" : "world"})))).to.equal(JSON.stringify(testStubs.sampleReponse));
+  });
+
+});
+
+
+describe('postToMountebank should properly handle fetch HTTP call', function() {
+  var testImposter;
+  before(function startUpMounteBank(){
+    Imposter.start_mb_server();
+  });
+  before(function constructImposter(){
+    testImposter = new Imposter(3000,'http');
+    const testPredicate = Imposter.createPredicate("expect", { "method" : "get", "path" : "/newpage" });
+    const testResponse = Imposter.createResponse(200, {"Content-Type" : "application/json"}, JSON.stringify({"hello" : "world"}));
+    testImposter.addNewStub(testPredicate, testResponse);
+
+  })
+  it('should return a promise', function() {
+    testImposter.postToMountebank().to.eventually.equal(400);
+  })
+})
