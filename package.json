@@ -12,8 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
     "lodash": "^4.13.1",
-    "mocha": "^2.5.3",
+    "eslint": "^1.2.1",
+    "eslint-config-logrhythm": "^1.0.7",  "mocha": "^2.5.3",
+    "mountebank": "^1.5.1-beta.1115",
     "node-fetch": "^1.5.3"
   }
 }
