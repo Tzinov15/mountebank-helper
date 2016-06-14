@@ -35,7 +35,6 @@ class Imposter {
     };
   }
 
-
   /**
   * [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options contianing information on the route + corresponding mocked respone
@@ -81,32 +80,20 @@ class Imposter {
     }
   }
 
-  printMe() {
-    console.log(util.inspect(this.RouteInformation, { depth: null }));
-  }
-  printResponse() {
-    console.log(util.inspect(this.CompleteResponse, { depth: null }));
-  }
-
-
+  /**
+   * This takes in our swagger-like representation of our route information (RouteInformation) and coverts
+   * it into a mountebank-style format (CompleteResponse) which includes the necassary stubs, formatting, etc
+   */
   createMBPostRequestBody() {
     for (const route in this.RouteInformation) {
       for (const verb in this.RouteInformation[route]) {
-        let statusCode = this.RouteInformation[route][verb].statusCode;
-        let responseHeaders = this.RouteInformation[route][verb].responseHeaders;
-        let responseBody = this.RouteInformation[route][verb].responseBody;
-        console.log('@@@ STATUS CODE: ' + statusCode);
-        console.log('@@@ HEADER: ');
-        console.log(responseHeaders);
-        console.log('@@@ BODY: ' + responseBody);
-        console.log('@@@ ROUTE: ' + route);
-        console.log('@@@ VERB: ' + verb);
+        const statusCode = this.RouteInformation[route][verb].statusCode;
+        const responseHeaders = this.RouteInformation[route][verb].responseHeaders;
+        const responseBody = this.RouteInformation[route][verb].responseBody;
 
-        let mbResponse = Imposter.createResponse(statusCode, responseHeaders, responseBody);
-        let mbPredicate = Imposter.createPredicate('equals', {'method' : verb, 'path' : route } );
+        const mbResponse = Imposter.createResponse(statusCode, responseHeaders, responseBody);
+        const mbPredicate = Imposter.createPredicate('equals', { 'method' : verb, 'path' : route } );
 
-        console.log(mbResponse);
-        console.log(mbPredicate);
 
         this.addNewStub(mbPredicate, mbResponse);
       }
@@ -181,14 +168,14 @@ class Imposter {
     const previousStubIndex = stubIndex || 0;
 
     // delete the old imposter
-    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`;
     fetch(imposterDeleteRoute, { method: 'DELETE' });
 
     // update it
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.statusCode = newCode;
 
     // post it again
-    fetch('http://127.0.0.1:2525/imposters', { imethod: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
+    fetch('http://127.0.0.1:2525/imposters', { imethod: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response) });
   }
 
   updateResponseHeaders(newHeaders, stubIndex, responseIndex) {
@@ -196,38 +183,33 @@ class Imposter {
     const previousStubIndex = stubIndex || 0;
 
     // delete the old imposter
-    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/$ {this.complete_response.port }`
-    fetch(imposterDeleteRoute, {method: 'DELETE'});
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/$ {this.complete_response.port }`;
+    fetch(imposterDeleteRoute, { method: 'DELETE' });
 
     // update it
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.headers = newHeaders;
 
     // post it again
-    fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
+    fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response) });
   }
 
 
-  /**
-  * This will take the current imposter from the Mountebank server, delete it, update the (this) Imposter instance, and then post it again to the mb server
-  * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
-  */
   updateResponseBody(newBody, stubIndex, responseIndex) {
-    var previousResponseIndex = responseIndex || 0;
-    var previousStubIndex = stubIndex || 0;
+    const previousResponseIndex = responseIndex || 0;
+    const previousStubIndex = stubIndex || 0;
 
     // delete the old imposter
-    var imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`
-    fetch(imposterDeleteRoute, {method: 'DELETE'});
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`;
+    fetch(imposterDeleteRoute, { method: 'DELETE' });
 
     // update it
-    console.log(require('util').inspect(this, { depth: null }));;
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.body = newBody;
 
     // post it again
-    return fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
+    return fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response) });
   }
 
-  printCurrentStubs(){
+  printCurrentStubs() {
     console.log(JSON.stringify(this.complete_response, null, 3));
   }
 
@@ -236,14 +218,21 @@ class Imposter {
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
   postToMountebank() {
-    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', {method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response)});
+    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.CompleteResponse) });
     return fetchReturnValue;
+  }
+
+  printMe() {
+    console.log(util.inspect(this.RouteInformation, { depth: null }));
+  }
+  printResponse() {
+    console.log(util.inspect(this.CompleteResponse, { depth: null }));
   }
 }
 // NOTE: This should obviously be a static method (not really tied to any one instance of an imposter) but should it be here in this class?
 
-function start_mb_server() {
-  var mbCreateResult = mb.create({
+function startMbServer() {
+  const mbCreateResult = mb.create({
     port           : 2525,
     pidfile        : './mb.pid',
     logfile        : './mb.log',
