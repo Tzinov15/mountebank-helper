@@ -4,6 +4,9 @@
 // TODO: Create more functionality to reflect funcitonaility provided by mountebank API. (delete all imposters, get imposterm etc)
 // TODO: Write some unit tests for this stuff
 // TODO: Make an interactive program that allows for quick and easy manipulation of imposters including updating responses, headers, and predicates
+
+// NOTE: Should objects be passed around as strings or as objects?
+
 const util = require('util');
 const fetch = require('node-fetch');
 const _ = require('lodash');
@@ -45,7 +48,7 @@ class Imposter {
       throw new TypeError('headers must be an object');
     }
     if (!_.isString(body)) {
-      throw new TypeError('body must be an string');
+      throw new TypeError('body must be a string');
     }
     var finalResponse = {};
     var response = {};
@@ -69,7 +72,7 @@ class Imposter {
       throw new TypeError('operator must be a string');
     }
     if (!_.isObject(predicateBody)) {
-      throw new TypeError('operator must be a string');
+      throw new TypeError('predicateBody must be an object');
     }
     var predicate = {};
     predicate[operator] = predicateBody;
