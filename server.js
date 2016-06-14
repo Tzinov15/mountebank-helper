@@ -4,12 +4,21 @@
 const Imposter = require('./imposter')
 const sample_html = require('./sample_html.js')
 
-var firstImposter = new Imposter(3000, 'http');
-var secondImposter = new Imposter(3001, 'http');
+// NOTE: take in a single object containing port and protocol
+// default to http
+const firstImposter = new Imposter(3000, 'http');
+const secondImposter = new Imposter(3001, 'http');
 
 
 
-var firstResponse = {
+
+let imposter = new mountebank.Imposter({});
+ let predicate1 = imposter.addPredicate({});
+ predicate1.addResponse({});
+
+ console.log(imposter.predicates);
+
+let firstResponse = {
   "statusCode" : 200,
   "body" : "<customer><email>customer@test.com</email></customer>",
   "headers" : {
@@ -18,7 +27,7 @@ var firstResponse = {
   }
 };
 
-var secondResponse = {
+let secondResponse = {
   "statusCode" : 200,
   "body" : sample_html,
   "headers" : {
@@ -26,8 +35,15 @@ var secondResponse = {
   }
 };
 
+let thirdResponse = {
+  "statusCode" : 200,
+  "body" : JSON.stringify({"hello" : "world"}),
+  "headers" : {
+    "content-type": "application/json"
+  }
+};
 
-var firstPredicate = {
+let firstPredicate = {
   operator: "equals",
   body: {
     "method" : "get",
@@ -35,7 +51,7 @@ var firstPredicate = {
   }
 }
 
-var secondPredicate = {
+let secondPredicate = {
   operator: "equals",
   body: {
     "method" : "get",
@@ -44,16 +60,18 @@ var secondPredicate = {
 }
 
 
-
-/*firstImposter.updateResponseBody("<changed>muahahaha</changed>");
+/*let responseOne = Imposter.createResponse(firstResponse.statusCode, firstResponse.headers, firstResponse.body);
+let predicateOne = Imposter.createPredicate(firstPredicate.operator,firstPredicate.body);
+firstImposter.addNewStub(predicateOne, responseOne);
+firstImposter.updateResponseBody("<changed>muahahaha</changed>");
 firstImposter.updateResponseCode(404);
-*/
+*/let responseOne = Imposter.createResponse(firstResponse.statusCode, firstResponse.headers, firstResponse.body);
+let predicateOne = Imposter.createPredicate(firstPredicate.operator,firstPredicate.body);
 
-var responseOne = Imposter.createResponse(firstResponse.statusCode, firstResponse.headers, firstResponse.body);
-var predicateOne = Imposter.createPredicate(firstPredicate.operator,firstPredicate.body);
-
-var responseTwo = Imposter.createResponse(secondResponse.statusCode, secondResponse.headers, secondResponse.body);
-var predicateTwo = Imposter.createPredicate(secondPredicate.operator,secondPredicate.body);
+let responseTwo = Imposter.createResponse(secondResponse.statusCode, secondResponse.headers, secondResponse.body);
+let predicateTwo = Imposter.createPredicate(secondPredicate.operator,secondPredicate.body);
+console.log(responseTwo);
+firstImposter.printCurrentStubs();
 
 firstImposter.addNewStub(predicateOne, responseOne);
 firstImposter.postToMountebank().then(function(response){
