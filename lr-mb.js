@@ -1,10 +1,6 @@
 'use strict';
+// TODO: file streaming for mb
 
-
-// TODO: Create more functionality to reflect funcitonaility provided by mountebank API. (delete all imposters, get imposterm etc)
-// TODO: Write some unit tests for this stuff
-// TODO: Make an interactive program that allows for quick and easy manipulation of imposters including updating responses, headers, and predicates
-// NOTE: Should objects be passed around as strings or as objects?
 
 const fetch = require('node-fetch');
 const _ = require('lodash');
@@ -12,10 +8,10 @@ const mb = require('mountebank');
 const util = require('util');
 
 class Imposter {
-  /**
-  * [Sets up the skelton for the POST request body that will be sent to the Mountebank server to set up the imposter]
-  * @param  {Number} port     The port number that the imposter is to listen on for incoming requests
-  * @param  {String} protocol The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
+  /** CLIENT-FACING METHOD
+  * [Sets up the skelton for the.routeInformation POST request body that will be sent to the Mountebank server to set up the imposter]
+  * @param  {Number} port     The port.routeInformation number that the imposter is to listen on for incoming requests
+  * @param  {String} protocol The.routeInformation protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
   * @return {Object }         Returns an instance of the Imposter class
   */
   constructor(port, protocol) {
@@ -25,16 +21,15 @@ class Imposter {
     if (!_.isNumber(port)) {
       throw new TypeError('port must be a number');
     }
-    /* This is the JSON representation of our available routes. This will be formatted similarly to swagger. This is NOT the body of our Imposter POST requesti */
-    this.RouteInformation = { };
-    this.CompleteResponse = {
+    /* This is the JSON representation of our available routes. This will be formatted similarly to swagger. This is NOT the body of our Imposter POST request */
+    this.ImposterInformation = {
       'port' : port,
       'protocol': protocol,
-      'stubs': []
+      'routeInformation' : {}
     };
   }
 
-  /**
+  /** CLIENT-FACING METHOD
   * [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options contianing information on the route + corresponding mocked respone
   * @param  {String} routeOptions.uri The URI of the route the user is wanting to match against
@@ -43,7 +38,7 @@ class Imposter {
   * @param  {Number} routeOptions.res.statusCode The status code that will be returned
   * @param  {Object} routeOptions.res.headers The headers that will be returned
   * @param  {String} routeOptions.res.body A string representation of the body that will be returned
-  * @returns {null} nothing gets returned
+  * @returns {void}
   */
   addRoute(routeOptions) {
     /* Input Validation */
@@ -69,35 +64,49 @@ class Imposter {
       throw new TypeError('routeOptions.res.responseHeaders must be an object');
     }
 
-    if ( (this.RouteInformation[routeOptions.uri]) != null) {
-      this.RouteInformation[routeOptions.uri][routeOptions.verb] = routeOptions.res;
+    /* If we already have an existing object for the given URI (from a different verb),
+    * we just want to add the new key value pair consisting of our new verb and its respective response */
+    if ( (this.ImposterInformation.routeInformation[routeOptions.uri]) != null) {
+      this.ImposterInformation.routeInformation[routeOptions.uri][routeOptions.verb] = routeOptions.res;
     }
+    /* If this is the first verb-response stub for this path, we can just create it  */
     else {
-      this.RouteInformation[routeOptions.uri] = {
+      this.ImposterInformation.routeInformation[routeOptions.uri] = {
         [routeOptions.verb] : routeOptions.res
       };
     }
   }
 
   /**
-   * This takes in our swagger-like representation of our route information (RouteInformation) and coverts
-   * it into a mountebank-style format (CompleteResponse) which includes the necassary stubs, formatting, etc
-   *  @return {null} returns nothing
+   * This takes in our swagger-like representation of our route information (ImposterInformation) and returns
+   * a mountebank-style format which includes the necassary stubs, formatting, etc
+  *  @returns {void}
    */
   createMBPostRequestBody() {
-    for (const route in this.RouteInformation) {
-      for (const verb in this.RouteInformation[route]) {
-        const statusCode = this.RouteInformation[route][verb].statusCode;
-        const responseHeaders = this.RouteInformation[route][verb].responseHeaders;
-        const responseBody = this.RouteInformation[route][verb].responseBody;
-
-        const mbResponse = Imposter.createResponse(statusCode, responseHeaders, responseBody);
-        const mbPredicate = Imposter.createPredicate('equals', { 'method' : verb, 'path' : route } );
+    const CompleteResponse = {
+      'port' : this.ImposterInformation.port,
+      'protocol': this.ImposterInformation.protocol,
+      'stubs': []
+    };
 
 
-        this.addNewStub(mbPredicate, mbResponse);
+    for (const route in this.ImposterInformation.routeInformation) {
+      for (const verb in this.ImposterInformation.routeInformation[route]) {
+        const statusCode = this.ImposterInformation.routeInformation[route][verb].statusCode;
+        const responseHeaders = this.ImposterInformation.routeInformation[route][verb].responseHeaders;
+        const responseBody = this.ImposterInformation.routeInformation[route][verb].responseBody;
+
+        const mbResponse = Imposter._createResponse(statusCode, responseHeaders, responseBody);
+        const mbPredicate = Imposter._createPredicate('equals', { 'method' : verb, 'path' : route } );
+
+
+        CompleteResponse.stubs.push({
+          predicates:[mbPredicate],
+          responses: [mbResponse]
+        });
       }
     }
+    return CompleteResponse;
   }
 
   /**
@@ -107,7 +116,7 @@ class Imposter {
   * @param  {String} body       The body to be returned as part of the imposters response
   * @return {Object}            The mountebank-formatted response object that can be added as part of a mountebank stub
   */
-  static createResponse(statuscode, headers, body) {
+  static _createResponse(statuscode, headers, body) {
     if (!_.isNumber(statuscode)) {
       throw new TypeError('statuscode must be a number');
     }
@@ -134,7 +143,7 @@ class Imposter {
   * @param  {Object} predicateBody       The body of the predicate. Often contains information on what conditions are to be met for a match on incoming request
   * @return {Object}            The mountebank-formatted prediate object that can be added as part of a mountebank stub
   */
-  static createPredicate(operator, predicateBody) {
+  static _createPredicate(operator, predicateBody) {
     if (!_.isString(operator)) {
       throw new TypeError('operator must be a string');
     }
@@ -146,32 +155,17 @@ class Imposter {
     return predicate;
   }
 
-  /**
-  * Adds a new stub containing arrays of predicates and responses to the skeleton for our imposter POST request body
-  * @param {Object} predicate A predicate object constructed using the above createPredicate method
-  * @param {Object} response   A response object constructed using the above createResponse method
-  * @return {null}  nothing  Returns nothing
-  */
-  addNewStub(predicate, response) {
-    this.CompleteResponse.stubs.push({
-      predicates:[predicate],
-      responses: [response]
-    });
-  }
-
   // TODO: Consolidate the next three functions into one function with additional parameter speicfying what the user wants to change
   // Somehthing like updateResponse(newParameter, stubIndex, responseIndex, parameterToBeChanged)
   // TODO: Possibly make an extra version of this method that isn't called on this, but instead is static and would take in another parameter port
   // that will uniquely identify the imposter that is to be updated
-  updateResponseCode(newCode, stubIndex, responseIndex) {
-    const previousResponseIndex = responseIndex || 0;
-    const previousStubIndex = stubIndex || 0;
+  updateResponseCode(newCode, pathToUpdate) {
 
-    // delete the old imposter
-    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.complete_response.port}`;
+    const imposterDeleteRoute = `http://127.0.0.1:2525/imposters/${this.ImposterInformation.port}`;
     fetch(imposterDeleteRoute, { method: 'DELETE' });
 
     // update it
+    const responseToUpdate =
     this.complete_response.stubs[previousStubIndex].responses[previousResponseIndex].is.statusCode = newCode;
 
     // post it again
@@ -209,28 +203,26 @@ class Imposter {
     return fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.complete_response) });
   }
 
-  printCurrentStubs() {
-    console.log(JSON.stringify(this.complete_response, null, 3));
-  }
 
   /**
   * This will take the current Imposter object (this) and make the POST request to the mountebank server to create the new imposter
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
   postToMountebank() {
-    this.createMBPostRequestBody();
-    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(this.CompleteResponse) });
+    const MBBody = this.createMBPostRequestBody();
+    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(MBBody) });
     return fetchReturnValue;
   }
 
-  printMe() {
-    console.log(util.inspect(this.RouteInformation, { depth: null }));
+  printRouteInformation() {
+    console.log('~~~ Route Information (Swagger-Like structure)~~~~');
+    console.log(util.inspect(this.ImposterInformation, { depth: null }));
   }
-  printResponse() {
+  printCompleteResponse() {
+    console.log('~~~  Complte Response (Mountebank-Like structure)~~~~');
     console.log(util.inspect(this.CompleteResponse, { depth: null }));
   }
 }
-// NOTE: This should obviously be a static method (not really tied to any one instance of an imposter) but should it be here in this class?
 
 function startMbServer() {
   const mbCreateResult = mb.create({
