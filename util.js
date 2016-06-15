@@ -1,3 +1,9 @@
+const randomWords = require('random-words');
+const dummyJson = require('dummy-json');
+const staticJSON = require('./config/randomJSON').staticJSON;
+
+
+
 function returnResponsesForAllVerbs(uri) {
 
   const verbArray = ['GET', 'POST', 'PUT', 'DELETE'];
@@ -22,4 +28,32 @@ function returnResponsesForAllVerbs(uri) {
 }
 
 
+function returnNumResponses(num) {
+  const responseArray = [];
+  const verbArray = ['GET', 'POST', 'PUT', 'DELETE'];
+  for (var i = 0; i < num; i++) {
+
+    var randomVerb = verbArray[Math.floor(Math.random() * verbArray.length ) ];
+    var randomURI = `/${randomWords()}`;
+    responseArray.push(
+      {
+        'uri' : randomURI,
+        'verb' : randomVerb,
+        'res' : {
+          'statusCode': 200,
+          'responseHeaders' : { 'Content-Type' : 'application/json' },
+          'responseBody' : JSON.stringify({
+            'VERB' : randomVerb,
+            'URI' : randomURI,
+            'RandomData' : JSON.stringify(staticJSON)
+          })
+        }
+      });
+  }
+  return responseArray;
+}
+
+
+
 module.exports.returnResponsesForAllVerbs = returnResponsesForAllVerbs;
+module.exports.returnNumResponses = returnNumResponses;
