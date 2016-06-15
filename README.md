@@ -1,5 +1,4 @@
 <h1> _MountebankHelper </h1>
-<hr>
 A simple Javascript wrapper to easily interface with Mountebank and not have to deal with its
 unintuitive object structure requirements.
 
@@ -22,7 +21,7 @@ This library only provides functionality for the <b>equals</b> predicate meaning
 
 ```javascript
 {
-  "uri" : /some_uri,      //URI against which we are maching an incoming request
+  "uri" :  some_uri,      // URI against which we are maching an incoming request
   "verb" : GET,           // HTTP method against which we are matching an incoming request
   "res" :                 // The response that is to be returned when the above conditions get met
     {
@@ -30,7 +29,8 @@ This library only provides functionality for the <b>equals</b> predicate meaning
       "responseHeaders" : {"Content-Type" : "application/json"},  
       "responseBody" : JSON.stringify({"hello" : "world"})
     }           
-}```
+}
+```
 
 <h3>Imposter.postToMountebank()</h3>
 Makes the actual POST request to the instance of mountebank running on localhost:2525 in order to setup the listening Imposter. Returns a Promise that resolves to the response returned from the Mountebank server
@@ -38,6 +38,32 @@ Makes the actual POST request to the instance of mountebank running on localhost
 <h3>Imposter.updateResponseBody(newBody, pathToUpdate)</h3>
 <h5>newBody</h5>
 The content of the new body that is to be returned by the imposter. Must be a string
-<h5>pathToUpdate</5>
-<h3>Imposter.updateResponseCode()</h3>
-<h3>Imposter.updateResponseHeaders()</h3>
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
+```
+
+<h3>Imposter.updateResponseCode(newCode, pathToUpdate)</h3>
+<h5>newCode</h5>
+The new status code that is to be returned by the imposter. Must be a string
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
+```
+
+<h3>Imposter.updateResponseHeaders(newHeaders, pathToUpdate)</h3>
+<h5>newHeaders</h5>
+The content of the new headers that is to be returned by the imposter. Must be a string
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
+```
