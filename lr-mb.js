@@ -169,6 +169,16 @@ class Imposter {
   * @return {Object} The response object (contains statusCode, headers, body) or throws an error if it can't find it
   */
   _getResponse(pathToUpdate) {
+    /* Input Validation */
+    if (!_.isObject(pathToUpdate)) {
+      throw new TypeError('pathToUpdate must be an object');
+    }
+    if (!_.isString(pathToUpdate.uri)) {
+      throw new TypeError('pathToUpdate.uri must be a string');
+    }
+    if (!_.isString(pathToUpdate.verb)) {
+      throw new TypeError('pathToUpdate.verb must be a string');
+    }
     const verb = pathToUpdate.verb;
     const uri =  pathToUpdate.uri;
     const responseToUpdate = this.ImposterInformation.routeInformation[uri][verb];
@@ -190,7 +200,9 @@ class Imposter {
       return response.text();
     })
     .then(function (body) {
-      if (body === '{}' ) throw new Error('old imposter was never deleted');
+      if (body === '{}' ) {
+        throw new Error('old imposter was never deleted');
+      }
       else {
         return body;
       }
@@ -200,14 +212,57 @@ class Imposter {
     });
   }
 
+  /** CLIENT-FACING METHOD **/
   updateResponseCode(newCode, pathToUpdate) {
-    this._updateResponse(newCode, 'statusCode', pathToUpdate);
+    /* Input Validation */
+    if (!_.isObject(pathToUpdate)) {
+      throw new TypeError('pathToUpdate must be an object');
+    }
+    if (!_.isString(pathToUpdate.uri)) {
+      throw new TypeError('pathToUpdate.uri must be a string');
+    }
+    if (!_.isString(pathToUpdate.verb)) {
+      throw new TypeError('pathToUpdate.verb must be a string');
+    }
+    if (!_.isNumber(newCode)) {
+      throw new TypeError('newCode must be a number');
+    }
+
+    return this._updateResponse(newCode, 'statusCode', pathToUpdate);
   }
+  /** CLIENT-FACING METHOD **/
   updateResponseHeaders(newHeaders, pathToUpdate) {
-    this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
+    /* Input Validation */
+    if (!_.isObject(pathToUpdate)) {
+      throw new TypeError('pathToUpdate must be an object');
+    }
+    if (!_.isString(pathToUpdate.uri)) {
+      throw new TypeError('pathToUpdate.uri must be a string');
+    }
+    if (!_.isString(pathToUpdate.verb)) {
+      throw new TypeError('pathToUpdate.verb must be a string');
+    }
+    if (!_.isObject(newHeaders)) {
+      throw new TypeError('newHeaders must be a object');
+    }
+    return this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
   }
+  /** CLIENT-FACING METHOD **/
   updateResponseBody(newBody, pathToUpdate) {
-    this._updateResponse(newBody, 'responseBody', pathToUpdate);
+    /* Input Validation */
+    if (!_.isObject(pathToUpdate)) {
+      throw new TypeError('pathToUpdate must be an object');
+    }
+    if (!_.isString(pathToUpdate.uri)) {
+      throw new TypeError('pathToUpdate.uri must be a string');
+    }
+    if (!_.isString(pathToUpdate.verb)) {
+      throw new TypeError('pathToUpdate.verb must be a string');
+    }
+    if (!_.isString(newBody)) {
+      throw new TypeError('newBody must be a string');
+    }
+    return this._updateResponse(newBody, 'responseBody', pathToUpdate);
   }
 
   /**
@@ -222,6 +277,18 @@ class Imposter {
   * @return {Promise} A promise (returned on behalf of fetch) that will resolve to the response from mountebank
   */
   _updateResponse(newContent, attributeToUpdate, pathToUpdate) {
+    if (!_.isObject(pathToUpdate)) {
+      throw new TypeError('pathToUpdate must be an object');
+    }
+    if (!_.isString(pathToUpdate.uri)) {
+      throw new TypeError('pathToUpdate.uri must be a string');
+    }
+    if (!_.isString(pathToUpdate.verb)) {
+      throw new TypeError('pathToUpdate.verb must be a string');
+    }
+    if (!_.isString(attributeToUpdate)) {
+      throw new TypeError('attributeToUpdate must be a string');
+    }
     // Get the response we are looking to modify
     const responseToUpdate = this._getResponse(pathToUpdate);
 
@@ -231,18 +298,16 @@ class Imposter {
     // recreate our new mountebank structure from our updated-state
     const updatedMounteBankRequest = this._createMBPostRequestBody();
 
-    // only only a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
-    this._deleteOldImposter().then(function () {
-      fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) });
+    // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
+    return this._deleteOldImposter().then(function () {
+      return fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) });
     })
     .catch(function (error) {
-      console.log('error: ');
       console.log(error);
     });
   }
 
-
-  /**
+  /** CLIENT-FACING METHOD
   * This will take the current Imposter object (this) and make the POST request to the mountebank server to create the new imposter
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
