@@ -4,6 +4,51 @@ unintuitive object structure requirements.
 
 
 
+<h1> Usage </h1>
+
+
+```javascript
+
+// import the mountebank helper library
+const lrMB = require('./lr-mb');
+
+// create the skeleton for the imposter (does not post to MB)
+const firstImposter = new lrMB.Imposter(3000, 'http');
+
+// construct sample responses and conditions on which to send it
+const sample_response = {
+  'uri' : /hello,
+  'verb' : GET,
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'hello' : 'world' })
+  }
+};
+
+const another_response = {
+  'uri' : /pets/123,
+  'verb' : PUT,
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+  }
+};
+
+
+// add our responses to our imposter
+firstImposter.addRoute(sample_response);
+firstImposter.addRoute(another_response);
+
+// start the MB server (defaults to port 2525) and post our Imposter to listen!
+lrMB.startMbServer()
+.then(function() {
+  firstImposter.postToMountebank();
+});
+
+```
+
 <h1>API</h1>
 
 
@@ -21,7 +66,7 @@ This library only provides functionality for the <b>equals</b> predicate meaning
 
 ```javascript
 {
-  "uri" :  some_uri,      // URI against which we are maching an incoming request
+  "uri" :  some_uri,      // URI against which we are matching an incoming request
   "verb" : GET,           // HTTP method against which we are matching an incoming request
   "res" :                 // The response that is to be returned when the above conditions get met
     {
