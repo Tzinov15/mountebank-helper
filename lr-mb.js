@@ -10,8 +10,8 @@ const mb = require('mountebank');
 const util = require('util');
 
 class Imposter {
-  /** CLIENT-FACING METHOD
-  * [Sets up the skelton for the.routeInformation POST request body that will be sent to the Mountebank server to set up the imposter]
+  /**
+  * Sets up the skelton for the.routeInformation POST request body that will be sent to the Mountebank server to set up the imposter]
   * @param  {Number} port     The port.routeInformation number that the imposter is to listen on for incoming requests
   * @param  {String} protocol The.routeInformation protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
   * @return {Object }         Returns an instance of the Imposter class
@@ -31,7 +31,7 @@ class Imposter {
     };
   }
 
-  /** CLIENT-FACING METHOD
+  /**
   * [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options contianing information on the route + corresponding mocked respone
   * @param  {String} routeOptions.uri The URI of the route the user is wanting to match against
@@ -65,6 +65,9 @@ class Imposter {
     if (!_.isObject(routeOptions.res.responseHeaders)) {
       throw new TypeError('routeOptions.res.responseHeaders must be an object');
     }
+
+    // If the user doesn't provide a path with a leading slash, we will add it here
+    if (routeOptions.uri[0] !== '/') routeOptions.uri = '/' + routeOptions.uri;
 
     /* If we already have an existing object for the given URI (from a different verb),
     * we just want to add the new key value pair consisting of our new verb and its respective response */
@@ -103,7 +106,6 @@ class Imposter {
         // create the MB friendly predicate and response portions
         const mbResponse = Imposter._createResponse(statusCode, responseHeaders, responseBody);
         const mbPredicate = Imposter._createPredicate('equals', { 'method' : verb, 'path' : route } );
-
 
         // shove these portions into our final complete response
         CompleteResponse.stubs.push({
@@ -208,11 +210,19 @@ class Imposter {
       }
     })
     .catch(function (error) {
+      console.log(error);
       throw new Error('old imposter was never deleted');
     });
   }
 
-  /** CLIENT-FACING METHOD **/
+  /** CLIENT-FACING METHOD
+  * Will update the response code of the specified response (specified via pathToUpdate) by calling _updateResponse
+  * @param  {Number} newCode          The new response code that is to be set for the specified response
+  * @param  {Object} pathToUpdate     An object containing information on which path they wish to update
+  * @param  {String} pathToUpdate.verb     The HTTP method for the complete path the user wants to update
+  * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
+  * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
+  **/
   updateResponseCode(newCode, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
@@ -230,7 +240,15 @@ class Imposter {
 
     return this._updateResponse(newCode, 'statusCode', pathToUpdate);
   }
-  /** CLIENT-FACING METHOD **/
+
+  /** CLIENT-FACING METHOD
+  * Will update the response headers of the specified response (specified via pathToUpdate) by calling _updateResponse
+  * @param  {Object} newHeaders          The new headers object that is to be set for the specified response
+  * @param  {Object} pathToUpdate     An object containing information on which path they wish to update
+  * @param  {String} pathToUpdate.verb     The HTTP method for the complete path the user wants to update
+  * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
+  * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
+  **/
   updateResponseHeaders(newHeaders, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
@@ -247,7 +265,14 @@ class Imposter {
     }
     return this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
   }
-  /** CLIENT-FACING METHOD **/
+  /** CLIENT-FACING METHOD
+  * Will update the response headers of the specified response (specified via pathToUpdate) by calling _updateResponse
+  * @param  {String} newBody          The new body that is to be set for the specified response
+  * @param  {Object} pathToUpdate     An object containing information on which path they wish to update
+  * @param  {String} pathToUpdate.verb     The HTTP method for the complete path the user wants to update
+  * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
+  * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
+  **/
   updateResponseBody(newBody, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
