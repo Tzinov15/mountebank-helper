@@ -1,3 +1,7 @@
+server.js # this is for personal testing so doesn't need to be in here
+#
+#
+#
 # Logs
 logs
 *.log

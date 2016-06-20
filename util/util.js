@@ -1,5 +1,4 @@
 const randomWords = require('random-words');
-const dummyJson = require('dummy-json');
 const staticJSON = require('./config/randomJSON').staticJSON;
 
 

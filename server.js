@@ -1,45 +1,43 @@
 'use strict';
+console.log('start');
 
-const responseUtil = require('./util');
+// import the mountebank helper library
 const lrMB = require('./lr-mb');
-const myUtil = require('./util');
 
-
-lrMB.startMbServer();
+// create the skeleton for the imposter (does not post to MB)
 const firstImposter = new lrMB.Imposter(3000, 'http');
-const secondImposter = new lrMB.Imposter(3001, 'http');
-const helloResponseArray = responseUtil.returnResponsesForAllVerbs('/hello');
-const petsResponseArray = responseUtil.returnResponsesForAllVerbs('/pets');
-const thirdImposter = new lrMB.Imposter(3002, 'http');
-const randomResponseArray = responseUtil.returnNumResponses(4);
+
+// construct sample responses and conditions on which to send it
+const sample_response = {
+  'uri' : '/hello',
+  'verb' : 'GET',
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'hello' : 'world' })
+  }
+};
+
+const another_response = {
+  'uri' : '/pets/123',
+  'verb' : 'PUT',
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+  }
+};
 
 
+// add our responses to our imposter
+firstImposter.addRoute(sample_response);
+firstImposter.addRoute(another_response);
 
-console.time('Add All Routes, Make Post to MounteBank');
-
-
-
-helloResponseArray.forEach(function (response) {
-  console.log(response.verb + ' ' + response.uri);
-  firstImposter.addRoute(response);
+// start the MB server (defaults to port 2525) and then
+lrMB.startMbServer()
+.then(function () {
+  firstImposter.postToMountebank()
 });
 
-
-/*randomResponseArray.forEach(function (response) {
-  console.log(response.verb + ' ' + response.uri);
-  thirdImposter.addRoute(response);
-});
-*/
-firstImposter.postToMountebank()
-.then(function (response) {
-  console.log(response.status);
-  console.timeEnd('Add All Routes, Make Post to MounteBank');
-})
-.catch(function (error) {
-  console.log(error);
-});
-
-firstImposter.updateResponseCode(500, { 'verb' : 'GET', 'uri' : '/hello' });
-firstImposter.printRouteInformation();
 
 // TODO: Make helper functoin that will randomly change a status code on a response every 5 seconds so that we can easily test the update functoins
