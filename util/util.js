@@ -1,6 +1,4 @@
 const randomWords = require('random-words');
-const staticJSON = require('./config/randomJSON').staticJSON;
-
 
 
 function returnResponsesForAllVerbs(uri) {
@@ -21,8 +19,6 @@ function returnResponsesForAllVerbs(uri) {
         }
       });
   });
-
-
   return responseArray;
 }
 
@@ -31,27 +27,26 @@ function returnNumResponses(num) {
   const responseArray = [];
   const verbArray = ['GET', 'POST', 'PUT', 'DELETE'];
   for (var i = 0; i < num; i++) {
-
-    var randomVerb = verbArray[Math.floor(Math.random() * verbArray.length ) ];
     var randomURI = `/${randomWords()}`;
-    responseArray.push(
-      {
-        'uri' : randomURI,
-        'verb' : randomVerb,
-        'res' : {
-          'statusCode': 200,
-          'responseHeaders' : { 'Content-Type' : 'application/json' },
-          'responseBody' : JSON.stringify({
-            'VERB' : randomVerb,
-            'URI' : randomURI,
-            'RandomData' : JSON.stringify(staticJSON)
-          })
-        }
-      });
+    verbArray.forEach(function (verb) {
+      responseArray.push(
+        {
+          'uri' : randomURI,
+          'verb' : verb,
+          'res' : {
+            'statusCode': 200,
+            'responseHeaders' : { 'Content-Type' : 'application/json' },
+            'responseBody' : JSON.stringify({
+              'VERB' : verb,
+              'URI' : randomURI
+            })
+          }
+        });
+
+    });
   }
   return responseArray;
 }
-
 
 
 module.exports.returnResponsesForAllVerbs = returnResponsesForAllVerbs;
