@@ -1,1 +1,0 @@
-{"port":3000,"protocol":"http","stubs":[{"predicates":[{"equals":{"method":"get","path":"/customers/123"}}],"responses":[{"is":{"statuscode":200,"headers":{"location":"http://localhost:4545/customers/123","content-type":"application/xml"},"body":"<customer><email>customer@test.com</email></customer>"}}]}]}

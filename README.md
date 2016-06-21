@@ -1,48 +1,114 @@
 <h1> _MountebankHelper </h1>
+A simple Javascript wrapper to easily interface with Mountebank and not have to deal with its
+unintuitive object structure requirements.
 
 
 
+<h1> Usage </h1>
 
 
+```javascript
 
-<h5> Example </h5>
+// import the mountebank helper library
+const lrMB = require('./lr-mb');
+
+// create the skeleton for the imposter (does not post to MB)
+const firstImposter = new lrMB.Imposter(3000, 'http');
+
+// construct sample responses and conditions on which to send it
+const sample_response = {
+  'uri' : /hello,
+  'verb' : GET,
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'hello' : 'world' })
+  }
+};
+
+const another_response = {
+  'uri' : /pets/123,
+  'verb' : PUT,
+  'res' : {
+    'statusCode': 200,
+    'responseHeaders' : { 'Content-Type' : 'application/json' },
+    'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+  }
+};
+
+
+// add our responses to our imposter
+firstImposter.addRoute(sample_response);
+firstImposter.addRoute(another_response);
+
+// start the MB server (defaults to port 2525) and post our Imposter to listen!
+lrMB.startMbServer()
+.then(function() {
+  firstImposter.postToMountebank();
+});
 
 ```
-// import the library
-const Imposter = require('./imposter')
 
-// create skeleton for imposter by specifying port to listen on and protocol
-var firstImposter = new Imposter(3002, 'http');
+<h1>API</h1>
 
 
-// construct the response you want to have returned from the imposter
-var responseStatusCode = 200;
-var responseBody = "<customer><email>customer@test.com</email></customer>";
-var responseHeaders = {
-  "location": "http://localhost:4545/customers/123",
-  "content-type": "application/xml"
-};
-var Response = Imposter.createResponse(responseStatusCode, responseHeaders, responseBody)
+<h3>lr_MB.Imposter(port, protocol)</h3>
+Constructor for the Imposter class which serves as the main entry point for interacting with Mountebank. <br>
+A single instance of an Imposter class represents a single Mountebank imposter listening on a single port. <br>
+<h5> port </h5> The port on which the Imposter is to listen on for incoming traffic
+<h5> protocol </h5> The protocol the Imposter is to run on
 
+<h3>Imposter.addRoute(responseObject)</h3>
+Adds a new <b> stub </b> to the imposter. A stub represents a combination of a predicate (conditions to be met) and a response (the response to be returned when those conditions are met). <br>
+This library only provides functionality for the <b>equals</b> predicate meaning, only complete response matches can be used as a predicate. See usage at end of README
 
-// construct the predicate to specify conditions for imposter response
-var predicateOperator = 'equals';
-var predicateBody = {
-  "method": "get",
-  "path": "/customers/123"
-};
-var Predicate = Imposter.createPredicate(predicateOperator,predicateBody);
+<h5> responseObject </h5>
 
-// add predicate and response to our imposter
-firstImposter.addNewStub(Predicate, Response);
+```javascript
+{
+  "uri" :  some_uri,      // URI against which we are matching an incoming request
+  "verb" : GET,           // HTTP method against which we are matching an incoming request
+  "res" :                 // The response that is to be returned when the above conditions get met
+    {
+      "statusCode" : 200,        
+      "responseHeaders" : {"Content-Type" : "application/json"},  
+      "responseBody" : JSON.stringify({"hello" : "world"})
+    }           
+}
+```
 
+<h3>Imposter.postToMountebank()</h3>
+Makes the actual POST request to the instance of mountebank running on localhost:2525 in order to setup the listening Imposter. Returns a Promise that resolves to the response returned from the Mountebank server
 
-// build the complete body that will be sent to mountebank
-firstImposter.createCompleteImposter();
+<h3>Imposter.updateResponseBody(newBody, pathToUpdate)</h3>
+<h5>newBody</h5>
+The content of the new body that is to be returned by the imposter. Must be a string
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
+```
 
-// send request, creates imposter!
-firstImposter.postToMountebank()
+<h3>Imposter.updateResponseCode(newCode, pathToUpdate)</h3>
+<h5>newCode</h5>
+The new status code that is to be returned by the imposter. Must be a string
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
+```
 
-
-
+<h3>Imposter.updateResponseHeaders(newHeaders, pathToUpdate)</h3>
+<h5>newHeaders</h5>
+The content of the new headers that is to be returned by the imposter. Must be a string
+<h5>pathToUpdate</h5>
+```javascript
+{
+  "uri" :  some_uri,      // URI of the response you wish to update
+  "verb" : GET           // HTTP Method of the response you wish to update
+}
 ```
