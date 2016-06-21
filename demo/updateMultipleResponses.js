@@ -11,7 +11,7 @@ const firstImposter = new lrMB.Imposter(3000, 'http');
 function updateManyResponses() {
   var prevPromise = Promise.resolve();
 
-  for (var i = 0; i < 100; i++) { // for each update we wish to perform...
+  for (var i = 0; i < 2; i++) { // for each update we wish to perform...
     prevPromise = prevPromise.then(function () { // set the promise equal to the result of our async method. Enforce sequential order
       const randomWordOne = randomWords(); // generate two random words
       const randomWordTwo = randomWords();
@@ -19,7 +19,7 @@ function updateManyResponses() {
       // update the response body of our existing response and return the resolved promise
       return firstImposter.updateResponseBody(JSON.stringify({ [randomWordOne] : randomWordTwo }), { 'verb' : 'GET', 'uri' : '/hello' });
     }).then(function (data) {
-      console.log(data.statusText);
+      console.log(data);
     });
   }
   // return the promise so that we can perform actions after the for loop has finished executing
