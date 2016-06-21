@@ -1,15 +1,16 @@
 'use strict';
-// IDEA:20 file streaming for mb
+// IDEA:30 file streaming for mb
 // IDEA:0 Some kind of promised based wrapper around timing functions in NODE that accounts for the async behavior of node
-// DONE:50 ERROR CHECKING
-// TODO:0 Make sure that resolve value is JSON from updateResponse and addRoute
-// TODO:10 Make function that also converts from mountebank form to clean JSON form
+// DONE:70 ERROR CHECKING
+// DONE:30 Make sure that resolve value is JSON from updateResponse and addRoute
+// IDEA:20 Make function that also converts from mountebank form to clean JSON form
 // DOING:0 Cleanup formatting so that it is meeting the linting rules
-// TODO:20 Make sure that the body (in the mb-style body) is formatted correctly (not too many quotes)
+// DONE:60 Make sure that the body (in the mb-style body) is formatted correctly (not too many quotes)
 // DONE:0 Ensure that promises are returned from asynchronous methods as opposed to throwing errors
 // DONE:20 Tag all asynchronous methods
 // DONE:10 Time the functions that will be involved as potential bottle necks for large responses
-// DONE:30 Find a way to test multiple (dynamic number) of update calls for the purposes of timing
+// DONE:40 Find a way to test multiple (dynamic number) of update calls for the purposes of timing
+// DONE:50 Make helper function that will randomly change a status code on a response every 5 seconds so that we can easily test the update functions
 
 
 const fetch = require('node-fetch');
@@ -115,6 +116,7 @@ class Imposter {
 
         // create the MB friendly predicate and response portions
         const mbResponse = Imposter._createResponse(statusCode, responseHeaders, responseBody);
+
         const mbPredicate = Imposter._createPredicate('equals', { 'method' : verb, 'path' : route } );
 
         // shove these portions into our final complete response in the form of a stub
@@ -365,10 +367,16 @@ class Imposter {
 
     // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
     return this._deleteOldImposter().then(function () {
-      return fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) });
-    })
-    .catch(function (error) { // this will catch errors (rejected promises) from the _deleteOldImposter method as well as from the above fetch call to update
-      return Promise.reject(error);
+      return fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) })
+      .then(function (response) {
+        return response.text();
+      })
+      .then(function (body) {
+        return body;
+      })
+      .catch(function (error) { // this will catch errors (rejected promises) from the _deleteOldImposter method as well as from the above fetch call to update
+        return Promise.reject(error);
+      });
     });
   }
 
@@ -384,13 +392,11 @@ class Imposter {
     return fetchReturnValue;
   }
 
-  printRouteInformation() {
-    console.log('~~~ Route Information (Swagger-Like structure)~~~~');
-    console.log(util.inspect(this.ImposterInformation.routeInformation, { depth: null }));
+  getStateReponse() {
+    return this.ImposterInformation.routeInformation;
   }
-  printCompleteResponse() {
-    console.log('~~~  Complte Response (Mountebank-Like structure)~~~~');
-    console.log(util.inspect(this._createMBPostRequestBody(), { depth: null }));
+  getMountebankResponse() {
+    return this._createMBPostRequestBody();
   }
 }
 
