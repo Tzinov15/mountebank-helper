@@ -16,7 +16,6 @@
 const fetch = require('node-fetch');
 const _ = require('lodash');
 const mb = require('mountebank');
-const util = require('util');
 
 /* EXECUTION TIME: 6-7 seconds for adding 400,000 random routes, parsing into mountebank-style body, and posting entire imposter to Mountebank */
 class Imposter {
@@ -195,7 +194,7 @@ class Imposter {
     }
     const verb = pathToUpdate.verb;
     const uri =  pathToUpdate.uri;
-    var responseToUpdate;
+    let responseToUpdate;
 
     // try to retrieve the response from our state based on the passed in uri and verb
     try {
