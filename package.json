@@ -7,6 +7,7 @@
     "start": "node server.js",
     "demo": "node demo.js",
     "demo-update": "node demo/updateMultipleResponses.js",
+    "demo-format": "node demo/stateFormat.js",
     "test": "mocha test/*.test.js"
   },
   "keywords": [],
