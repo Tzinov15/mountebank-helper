@@ -1,6 +1,3 @@
-// TODO: Seperate this file (as it grows) into seperate test files based on their functionaility
-
-
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const chaiSubset = require('chai-subset');
@@ -8,18 +5,10 @@ chai.should();
 
 chai.use(chaiAsPromised);
 chai.use(chaiSubset);
-const expect = chai.expect;
 
 
 // import the mountebank helper library
 const lrMB = require('../src/lr-mb');
-const Imposter = lrMB.Imposter;
-
-const testStubs = require('./testStubs');
-
-
-// TODO: Also check for object properties on final response body
-
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
@@ -64,7 +53,7 @@ describe('Posting to MounteBank', function () {
     })
     .should.be.eventually.fulfilled.and.have.property('port').and.equal(3001);
   });
-  
+
   it('Should return the correctly updated response body on an update', function () {
     const sampleRespnse = {
       'uri' : '/pets/123',
@@ -79,10 +68,7 @@ describe('Posting to MounteBank', function () {
     testImposter.addRoute(sampleRespnse);
     return testImposter.postToMountebank()
     .then(function () {
-      return testImposter.updateResponseBody(JSON.stringify({'updatedAttribute' : 'newValue'}), {'uri' : '/pets/123', 'verb' : 'PUT'})
-    })
-    .then(function (response) {
-      return response.text()
+      return testImposter.updateResponseBody(JSON.stringify({ 'updatedAttribute' : 'newValue' }), { 'uri' : '/pets/123', 'verb' : 'PUT' });
     })
     .then(function (body) {
       return JSON.parse(JSON.parse(body).stubs[0].responses[0].is.body);
