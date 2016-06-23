@@ -1,27 +1,17 @@
 'use strict';
-// IDEA:30 file streaming for mb
-// IDEA:0 Some kind of promised based wrapper around timing functions in NODE that accounts for the async behavior of node
-// DONE:70 ERROR CHECKING
-// DONE:30 Make sure that resolve value is JSON from updateResponse and addRoute
-// IDEA:20 Make function that also converts from mountebank form to clean JSON form
-// DOING:0 Cleanup formatting so that it is meeting the linting rules
-// DONE:60 Make sure that the body (in the mb-style body) is formatted correctly (not too many quotes)
-// DONE:0 Ensure that promises are returned from asynchronous methods as opposed to throwing errors
-// DONE:20 Tag all asynchronous methods
-// DONE:10 Time the functions that will be involved as potential bottle necks for large responses
-// DONE:40 Find a way to test multiple (dynamic number) of update calls for the purposes of timing
-// DONE:50 Make helper function that will randomly change a status code on a response every 5 seconds so that we can easily test the update functions
+// IDEA: file streaming for mb
+// IDEA: Make function that also converts from mountebank form to clean JSON form
+/* EXECUTION TIME: 6-7 seconds for adding 400,000 random routes, parsing into mountebank-style body, and posting entire imposter to Mountebank */
 
 
 const fetch = require('node-fetch');
 const _ = require('lodash');
 const mb = require('mountebank');
 
-/* EXECUTION TIME: 6-7 seconds for adding 400,000 random routes, parsing into mountebank-style body, and posting entire imposter to Mountebank */
-class Imposter {
 
+class Imposter {
   /**
-  * Sets up the skelton for the.routeInformation POST request body that will be sent to the Mountebank server to set up the imposter]
+  * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
   * @param  {Number} port     The port.routeInformation number that the imposter is to listen on for incoming requests
   * @param  {String} protocol The.routeInformation protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
   * @return {Object }         Returns an instance of the Imposter class
@@ -41,8 +31,7 @@ class Imposter {
     };
   }
 
-  /** EXECUTION TIME: 132 ms for 400,000 random routes (100,000 random URIs + 4 verbs) being added via addRoute()
-  * [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
+  /* [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options containing information on the route + corresponding mocked response
   * @param  {String} routeOptions.uri The URI of the route the user is wanting to match against
   * @param  {String} routeOptions.verb       The HTTP verb the is wanting to match against
@@ -92,8 +81,7 @@ class Imposter {
     }
   }
 
-  /** EXECUTION TIME: 85 ms for 400,000 random routes (100,000 random URIs + 4 verbs) being parsed from our state and added to our MB-body
-  * This will take our state (our swagger-like representation of our routes) and construct our mountebank-formatted body
+  /* This will take our state (our swagger-like representation of our routes) and construct our mountebank-formatted body
   * This mountebank-formatted body is what gets inserted into our POST request which ultimately creates our imposter
   *  @returns {Object} - A rigidly formatted MounteBank-Friendly object that can be directly sent as a post request to MB
    */
@@ -255,7 +243,6 @@ class Imposter {
   * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
   * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
   **/
-
   updateResponseCode(newCode, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
@@ -282,7 +269,6 @@ class Imposter {
   * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
   * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
   **/
-
   updateResponseHeaders(newHeaders, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
@@ -299,6 +285,7 @@ class Imposter {
     }
     return this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
   }
+
   /** CLIENT-FACING METHOD
   * Will update the response headers of the specified response (specified via pathToUpdate) by calling _updateResponse
   * @param  {String} newBody          The new body that is to be set for the specified response
@@ -307,7 +294,6 @@ class Imposter {
   * @param  {String} pathToUpdate.uri     The relative URI for the complete path the user wants to update
   * @returns {Promise} Will return the promise returned by _updateResponse which will be resolved with the response from the fetch call
   **/
-
   updateResponseBody(newBody, pathToUpdate) {
     /* Input Validation */
     if (!_.isObject(pathToUpdate)) {
@@ -379,9 +365,7 @@ class Imposter {
     });
   }
 
-
-  /** CLIENT-FACING METHOD
-  * ASYNC METHOD
+  /** CLIENT-FACING METHOD || ASYNC METHOD
   * This will take the current Imposter object (this) and make the POST request to the mountebank server to create the new imposter
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
