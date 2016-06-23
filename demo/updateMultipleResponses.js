@@ -18,9 +18,14 @@ function updateManyResponses() {
       console.log(`randomWordOne: ${randomWordOne} randomWordTwo: ${randomWordTwo}`);
       // update the response body of our existing response and return the resolved promise
       return firstImposter.updateResponseBody(JSON.stringify({ [randomWordOne] : randomWordTwo }), { 'verb' : 'GET', 'uri' : '/hello' });
-    }).then(function (data) {
-      console.log(data);
+    }).then(function () {
+      console.log('success');
+    })
+    .catch(error => {
+      console.log('error: ');
+      console.log(error);
     });
+
   }
   // return the promise so that we can perform actions after the for loop has finished executing
   return prevPromise;
@@ -37,5 +42,13 @@ firstImposter.postToMountebank().then(function () {
     console.log('should be done with updateManyResponses');
     console.timeEnd('updateManyResponses: ');
     console.log('finish');
+  })
+  .catch(error => {
+    console.log('error: ');
+    console.log(error);
   });
+})
+.catch(error => {
+  console.log('error: ');
+  console.log(error);
 });
