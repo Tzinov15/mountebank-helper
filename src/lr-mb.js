@@ -239,7 +239,8 @@ class Imposter {
    */
   _deleteOldImposter() {
     // make DELETE request to the mountebank server (through fetch)...
-    return fetch(`http://127.0.0.1:2525/imposters/${this.ImposterInformation.imposterPort}`, { method: 'delete' })
+    console.log(`helo from deleteOldImposter http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`);
+    return fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, { method: 'delete' })
     .then(function (response) {   // retrieve the text body from the response
       return response.text();
     })
@@ -370,9 +371,9 @@ class Imposter {
     const updatedMounteBankRequest = this._createMBPostRequestBody();
 
     // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
-    // TODO: can ski this method because MB already does it on a new post request
+    const mbPort = this.ImposterInformation.mountebankPort;
     return this._deleteOldImposter().then(function () {
-      return fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) })
+      return fetch(`http://127.0.0.1:${mbPort}/imposters`, { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) })
       .then(function (response) {
         return response.text();
       })
@@ -390,9 +391,8 @@ class Imposter {
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
   postToMountebank() {
-    // TODO: make sure port number gets pulled from config/instance var
     const MBBody = this._createMBPostRequestBody();
-    const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(MBBody) });
+    const fetchReturnValue = fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters`, { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(MBBody) });
     return fetchReturnValue;
   }
 
@@ -403,11 +403,9 @@ class Imposter {
     return this._createMBPostRequestBody();
   }
 }
-
-// TODO: take in an object with config options
-function startMbServer() {
+function startMbServer(port) {
   const mbCreateResult = mb.create({
-    port           : 2525,
+    port           : port,
     pidfile        : './mb.pid',
     logfile        : './mb.log',
     loglevel       : 'error',
@@ -416,6 +414,8 @@ function startMbServer() {
   });
   return mbCreateResult;
 }
+// TODO: take in an object with config options
+
 
 module.exports.Imposter = Imposter;
 module.exports.startMbServer = startMbServer;
