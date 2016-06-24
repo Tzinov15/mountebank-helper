@@ -12,7 +12,7 @@ const lrMB = require('../src/lr-mb');
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
-    lrMB.startMbServer();
+    lrMB.startMbServer(2525);
   });
   it('Should return a resolved promise on a good request', function () {
     const sampleResponse = {
