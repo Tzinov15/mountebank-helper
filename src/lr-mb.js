@@ -1,7 +1,10 @@
 'use strict';
+// TODO: Make an example fibonaci funcotin thats async and sync (async with setImmediate)
 // IDEA: file streaming for mb
 // IDEA: Make function that also converts from mountebank form to clean JSON form
 /* EXECUTION TIME: 6-7 seconds for adding 400,000 random routes, parsing into mountebank-style body, and posting entire imposter to Mountebank */
+
+// TODO: make constructor take object, default to http
 
 
 const fetch = require('node-fetch');
@@ -12,24 +15,36 @@ const mb = require('mountebank');
 class Imposter {
   /**
   * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
-  * @param  {Number} port     The port.routeInformation number that the imposter is to listen on for incoming requests
-  * @param  {String} protocol The.routeInformation protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
+  * @param  {Object} options     The set of options to configure the imposter
+  * @param  {Number} options.mountebankPort     The port number on which the Mountebank server is to listen on
+  * @param  {Number} options.imposterPort     The port number on which this particular Imposter is to listen on
+  * @param  {String} options.protocol     The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
   * @return {Object }         Returns an instance of the Imposter class
+// TODO: make constructor take object, default to http
   */
-  constructor(port, protocol) {
-    if (!_.isString(protocol)) {
-      throw new TypeError('protocol must be a string');
+  constructor(options) {
+    if (!_.isObject(options)) {
+      throw new TypeError('options must be a Object');
     }
-    if (!_.isNumber(port)) {
-      throw new TypeError('port must be a number');
+    if (!_.isNumber(options.imposterPort)) {
+      throw new TypeError('options.imposterPort must be a Number');
+    }
+
+    if (options.protocol == null) {
+      options.protocol = 'http';
+    }
+    if (options.mountebankPort == null) {
+      options.mountebankPort = 2525;
     }
     /* This is the JSON representation of our available routes. This will be formatted similarly to swagger. This is NOT the body of our Imposter POST request */
     this.ImposterInformation = {
-      'port' : port,
-      'protocol': protocol,
+      'imposterPort' : options.imposterPort,
+      'mountebankPort' : options.mountebankPort,
+      'protocol': options.protocol,
       'routeInformation' : {}
     };
   }
+
 
   /* [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options containing information on the route + corresponding mocked response
@@ -81,13 +96,14 @@ class Imposter {
     }
   }
 
+
   /* This will take our state (our swagger-like representation of our routes) and construct our mountebank-formatted body
   * This mountebank-formatted body is what gets inserted into our POST request which ultimately creates our imposter
   *  @returns {Object} - A rigidly formatted MounteBank-Friendly object that can be directly sent as a post request to MB
    */
   _createMBPostRequestBody() {
     const CompleteResponse = {
-      'port' : this.ImposterInformation.port,
+      'port' : this.ImposterInformation.imposterPort,
       'protocol': this.ImposterInformation.protocol,
       'stubs': []
     };
@@ -115,6 +131,7 @@ class Imposter {
     }
     return CompleteResponse;
   }
+
 
   /**
   * This will take in the desired response components (status, headers, and body) and construct a mountebank-style response. Takes care of rigid formatting that MB requires
@@ -144,6 +161,7 @@ class Imposter {
     return finalResponse;
   }
 
+
   /**
   * This will take in the users desired predicate components and construct a mounte-bank style predicate
   * @param  {String} operator   The operator to be used as part of this predicate (see mountebank predicate documentation for list of available operators)
@@ -161,6 +179,7 @@ class Imposter {
     predicate[operator] = predicateBody;
     return predicate;
   }
+
 
   /**
   * Helper function that will retrieve a response from our swagger-like state based on the supplied path information (verb + uri)
@@ -208,32 +227,26 @@ class Imposter {
     return responseToUpdate;
   }
 
+
   /** ASYNC-METHOD
    * deletes the old imposter
    * mountebank will return details on the deleted imposter upon a successful delete request
-   * unfortunately, it will also return a 200 even when attempting to delete a non-existing imposter
-   * therefore, to validate a successful delete request (for the purpose of maintaining resolved promises),
-   * we check the body of the response from the delete request
-   * @return {Promise}   If we have a successful delete request (see above) then we return a resolved promise containing the contents of the deleted imposter
+   * @return {Promise}    we return a resolved promise containing the contents of the deleted imposter
    */
   _deleteOldImposter() {
     // make DELETE request to the mountebank server (through fetch)...
-    return fetch(`http://127.0.0.1:2525/imposters/${this.ImposterInformation.port}`, { method: 'delete' })
+    return fetch(`http://127.0.0.1:2525/imposters/${this.ImposterInformation.imposterPort}`, { method: 'delete' })
     .then(function (response) {   // retrieve the text body from the response
       return response.text();
     })
     .then(function (body) {
-      if (body === '{}' ) { // Return rejected promise in case of imposter that never got deleted (or was never there to begin with)
-        return Promise.reject(new Error('old imposter was never deleted'));
-      }
-      else {
-        return Promise.resolve(body); // Return resolved promise containing text body from response
-      }
+      return body; // Return resolved promise containing text body from response
     })
     .catch(function (error) {
-      return Promise.reject(error); // Return rejected promise for any other issue
+      throw new Error(error);
     });
   }
+
 
   /** CLIENT-FACING METHOD
   * Will update the response code of the specified response (specified via pathToUpdate) by calling _updateResponse
@@ -261,6 +274,7 @@ class Imposter {
     return this._updateResponse(newCode, 'statusCode', pathToUpdate);
   }
 
+
   /** CLIENT-FACING METHOD
   * Will update the response headers of the specified response (specified via pathToUpdate) by calling _updateResponse
   * @param  {Object} newHeaders          The new headers object that is to be set for the specified response
@@ -286,6 +300,7 @@ class Imposter {
     return this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
   }
 
+
   /** CLIENT-FACING METHOD
   * Will update the response headers of the specified response (specified via pathToUpdate) by calling _updateResponse
   * @param  {String} newBody          The new body that is to be set for the specified response
@@ -310,6 +325,7 @@ class Imposter {
     }
     return this._updateResponse(newBody, 'responseBody', pathToUpdate);
   }
+
 
   /** ASYNC-METHOD
   * EXECUTION TIME: ~700 ms for generating two random words, updating an imposter body with the two words, and posting to MB 100 times
@@ -338,6 +354,8 @@ class Imposter {
       throw new TypeError('attributeToUpdate must be a string');
     }
 
+    // TODO: helper function for normalizing path
+    // TODO: no inline if statements
     // If the user doesn't provide a path with a leading slash, we will add it here
     if (pathToUpdate.uri[0] !== '/') pathToUpdate.uri = `/${pathToUpdate.uri}`;
 
@@ -351,6 +369,7 @@ class Imposter {
     const updatedMounteBankRequest = this._createMBPostRequestBody();
 
     // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
+    // TODO: can ski this method because MB already does it on a new post request
     return this._deleteOldImposter().then(function () {
       return fetch('http://127.0.0.1:2525/imposters', { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) })
       .then(function (response) {
@@ -370,6 +389,7 @@ class Imposter {
   * @return {Object}           Returns a promise (returns the node-fetch promise) that resolves the response and rejects with the error message
   */
   postToMountebank() {
+    // TODO: make sure port number gets pulled from config/instance var
     const MBBody = this._createMBPostRequestBody();
     const fetchReturnValue = fetch('http://127.0.0.1:2525/imposters', { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(MBBody) });
     return fetchReturnValue;
@@ -383,6 +403,7 @@ class Imposter {
   }
 }
 
+// TODO: take in an object with config options
 function startMbServer() {
   const mbCreateResult = mb.create({
     port           : 2525,
