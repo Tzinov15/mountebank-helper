@@ -12,27 +12,31 @@ const expect = chai.expect;
 
 
 // import the mountebank helper library
-const lrMB = require('../src/lr-mb');
-const Imposter = lrMB.Imposter;
+const mb_helper = require('../src/mb_helper');
+const Imposter = mb_helper.Imposter;
 
 // TODO: Also check for object properties on final response body
 
 
 describe('Input Validation', function () {
   describe('Imposter Constructor', function () {
-    it('Should throw if port is not a number', function () {
+    it('Should throw if options is not an object', function () {
       expect(function () {
-        new lrMB.Imposter('hello', 'world');
-      }).to.throw('port must be a number');
+        new mb_helper.Imposter('hello', 'world');
+      }).to.throw('options must be a Object');
     });
-    it('Should throw if protocol is not a string', function () {
-      expect(function () {
-        new lrMB.Imposter('hello', 15);
-      }).to.throw('protocol must be a string');
+
+    it('Should default to setting protocol to http if one is not supplied', function () {
+      expect( new mb_helper.Imposter({ 'mountebankPort' : 2525, 'imposterPort' : 3000 }).ImposterInformation.protocol).to.equal('http');
     });
+
+    it('Should default to setting mountebankPort to 2525 if one is not supplied', function () {
+      expect( new mb_helper.Imposter({ 'protocol' : 'http', 'imposterPort' : 3000 }).ImposterInformation.mountebankPort).to.equal(2525);
+    });
+
     it('Should NOT throw if proper arguments are specified', function () {
       expect(function () {
-        new lrMB.Imposter(3000, 'http');
+        new mb_helper.Imposter({ 'mountebankPort' : 2525, 'imposterPort' : 3000 });
       }).to.not.throw();
     });
   });

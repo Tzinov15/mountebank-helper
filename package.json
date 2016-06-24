@@ -8,6 +8,7 @@
     "demo": "node demo.js",
     "demo-update": "node demo/updateMultipleResponses.js",
     "demo-format": "node demo/stateFormat.js",
+    "demo-simple": "node demo/simple.js",
     "test": "mocha test/*.test.js"
   },
   "keywords": [],

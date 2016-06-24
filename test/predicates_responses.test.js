@@ -9,8 +9,8 @@ const expect = chai.expect;
 
 
 // import the mountebank helper library
-const lrMB = require('../src/lr-mb');
-const Imposter = lrMB.Imposter;
+const mb_helper = require('../src/mb_helper');
+const Imposter = mb_helper.Imposter;
 
 const testStubs = require('./testStubs');
 

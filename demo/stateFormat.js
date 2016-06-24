@@ -1,10 +1,10 @@
 'use strict';
 
 // import the mountebank helper library
-const lrMB = require('../src/lr-mb');
+const mb_helper = require('../src/mb_helper');
 
 // create the skeleton for the imposter (does not post to MB)
-const firstImposter = new lrMB.Imposter(3000, 'http');
+const firstImposter = new mb_helper.Imposter({ 'imposterPort' : 300 });
 
 // construct sample responses and conditions on which to send it
 const sampleResponse = {

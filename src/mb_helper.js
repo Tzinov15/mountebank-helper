@@ -46,7 +46,7 @@ class Imposter {
   _normalizeURI(uri) {
     // If the user doesn't provide a path with a leading slash, we will add it here
     let newUri = uri;
-    if (!(newUri[0] !== '/')) {
+    if (newUri[0] !== '/') {
       newUri = `/${newUri}`;
     }
     return newUri;
@@ -239,7 +239,6 @@ class Imposter {
    */
   _deleteOldImposter() {
     // make DELETE request to the mountebank server (through fetch)...
-    console.log(`helo from deleteOldImposter http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`);
     return fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, { method: 'delete' })
     .then(function (response) {   // retrieve the text body from the response
       return response.text();

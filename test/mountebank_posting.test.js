@@ -8,11 +8,11 @@ chai.use(chaiSubset);
 
 
 // import the mountebank helper library
-const lrMB = require('../src/lr-mb');
+const mb_helper = require('../src/mb_helper');
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
-    lrMB.startMbServer(2525);
+    mb_helper.startMbServer(2525);
   });
   it('Should return a resolved promise on a good request', function () {
     const sampleResponse = {
@@ -24,13 +24,13 @@ describe('Posting to MounteBank', function () {
         'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
       }
     };
-    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3000 });
+    const testImposter = new mb_helper.Imposter({ 'imposterPort' : 3000 });
     testImposter.addRoute(sampleResponse);
     return testImposter.postToMountebank().should.be.eventually.fulfilled.and.have.property('status').and.equal(201);
   });
 
   it('Should return a resolved promise with a correct response on a update request', function () {
-    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3001 });
+    const testImposter = new mb_helper.Imposter({ 'imposterPort' : 3001 });
     const sampleResponse = {
       'uri' : '/pets/123',
       'verb' : 'PUT',
@@ -64,7 +64,7 @@ describe('Posting to MounteBank', function () {
         'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
       }
     };
-    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3002 });
+    const testImposter = new mb_helper.Imposter({ 'imposterPort' : 3002 });
     testImposter.addRoute(sampleRespnse);
     return testImposter.postToMountebank()
     .then(function () {
