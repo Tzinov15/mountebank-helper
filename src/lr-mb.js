@@ -43,7 +43,7 @@ class Imposter {
     };
   }
 
-  normalizeURI(uri) {
+  _normalizeURI(uri) {
     // If the user doesn't provide a path with a leading slash, we will add it here
     let newUri = uri;
     if (!(newUri[0] !== '/')) {
@@ -86,7 +86,7 @@ class Imposter {
       throw new TypeError('routeOptions.res.responseHeaders must be an object');
     }
 
-    const normalizedURI = this.normalizeURI(routeOptions.uri);
+    const normalizedURI = this._normalizeURI(routeOptions.uri);
 
     /* If we already have an existing object for the given URI (from a different verb),
     * we just want to add the new key value pair consisting of our new verb and its respective response */
@@ -358,7 +358,7 @@ class Imposter {
       throw new TypeError('attributeToUpdate must be a string');
     }
 
-    pathToUpdate.uri = this.normalizeURI(pathToUpdate.uri);
+    pathToUpdate.uri = this._normalizeURI(pathToUpdate.uri);
 
     // Get the response we are looking to modify
     const responseToUpdate = this._getResponse(pathToUpdate);
