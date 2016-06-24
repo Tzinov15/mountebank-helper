@@ -4,7 +4,6 @@
 // IDEA: Make function that also converts from mountebank form to clean JSON form
 /* EXECUTION TIME: 6-7 seconds for adding 400,000 random routes, parsing into mountebank-style body, and posting entire imposter to Mountebank */
 
-// TODO: make constructor take object, default to http
 
 
 const fetch = require('node-fetch');
@@ -16,11 +15,10 @@ class Imposter {
   /**
   * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
   * @param  {Object} options     The set of options to configure the imposter
-  * @param  {Number} options.mountebankPort     The port number on which the Mountebank server is to listen on
+  * @param  {Number} options.mountebankPort     The port number on which the Mountebank server is to listen on (defaults to 2525)
   * @param  {Number} options.imposterPort     The port number on which this particular Imposter is to listen on
-  * @param  {String} options.protocol     The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp
+  * @param  {String} options.protocol     The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp (defaults to http)
   * @return {Object }         Returns an instance of the Imposter class
-// TODO: make constructor take object, default to http
   */
   constructor(options) {
     if (!_.isObject(options)) {
@@ -45,6 +43,14 @@ class Imposter {
     };
   }
 
+  normalizeURI(uri) {
+    // If the user doesn't provide a path with a leading slash, we will add it here
+    let newUri = uri;
+    if (!(newUri[0] !== '/')) {
+      newUri = `/${newUri}`;
+    }
+    return newUri;
+  }
 
   /* [Takes in a route (URI + VERB) and a response body that is to be returned from MB when the given route gets reached]
   * @param  {Object} routeOptions     The options containing information on the route + corresponding mocked response
@@ -80,22 +86,20 @@ class Imposter {
       throw new TypeError('routeOptions.res.responseHeaders must be an object');
     }
 
-    // If the user doesn't provide a path with a leading slash, we will add it here
-    if (routeOptions.uri[0] !== '/') routeOptions.uri = `/${routeOptions.uri}`;
+    const normalizedURI = this.normalizeURI(routeOptions.uri);
 
     /* If we already have an existing object for the given URI (from a different verb),
     * we just want to add the new key value pair consisting of our new verb and its respective response */
-    if ( (this.ImposterInformation.routeInformation[routeOptions.uri]) != null) {
-      this.ImposterInformation.routeInformation[routeOptions.uri][routeOptions.verb] = routeOptions.res;
+    if ( (this.ImposterInformation.routeInformation[normalizedURI]) != null) {
+      this.ImposterInformation.routeInformation[normalizedURI][routeOptions.verb] = routeOptions.res;
     }
     /* If this is the first verb-response stub for this path, we can just create it  */
     else {
-      this.ImposterInformation.routeInformation[routeOptions.uri] = {
+      this.ImposterInformation.routeInformation[normalizedURI] = {
         [routeOptions.verb] : routeOptions.res
       };
     }
   }
-
 
   /* This will take our state (our swagger-like representation of our routes) and construct our mountebank-formatted body
   * This mountebank-formatted body is what gets inserted into our POST request which ultimately creates our imposter
@@ -354,10 +358,7 @@ class Imposter {
       throw new TypeError('attributeToUpdate must be a string');
     }
 
-    // TODO: helper function for normalizing path
-    // TODO: no inline if statements
-    // If the user doesn't provide a path with a leading slash, we will add it here
-    if (pathToUpdate.uri[0] !== '/') pathToUpdate.uri = `/${pathToUpdate.uri}`;
+    pathToUpdate.uri = this.normalizeURI(pathToUpdate.uri);
 
     // Get the response we are looking to modify
     const responseToUpdate = this._getResponse(pathToUpdate);
