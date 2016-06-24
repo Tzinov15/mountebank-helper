@@ -1,7 +1,10 @@
-<h1> _MountebankHelper </h1>
-A simple Javascript wrapper to easily interface with Mountebank and not have to deal with its
-unintuitive object structure requirements.
+<h1> MountebankHelper </h1>
+A simple Javascript wrapper to easily interface with <a href = 'http://www.mbtest.org/'>Mountebank</a> and not have to deal with its
+abstract object structure requirements. <br><br>
 
+While not providing an API for the full feature list that mountebank has, MountebankHelper provides enough functionality so that it reflects the core purpose of Mountebank and is easy to use at the same time. <br>
+
+In the future this library will probably become a full-fledged Javascript wrapper around several of Mountebanks powerful CLI commands
 
 
 <h1> Usage </h1>
@@ -10,10 +13,10 @@ unintuitive object structure requirements.
 ```javascript
 
 // import the mountebank helper library
-const lrMB = require('./lr-mb');
+const mbHelper = require('mountebank-helper');
 
 // create the skeleton for the imposter (does not post to MB)
-const firstImposter = new lrMB.Imposter(3000, 'http');
+const firstImposter = new mbHelper.Imposter({ 'imposterPort' : 3000 });
 
 // construct sample responses and conditions on which to send it
 const sample_response = {
@@ -41,8 +44,8 @@ const another_response = {
 firstImposter.addRoute(sample_response);
 firstImposter.addRoute(another_response);
 
-// start the MB server (defaults to port 2525) and post our Imposter to listen!
-lrMB.startMbServer()
+// start the MB server  and post our Imposter to listen!
+mbHelper.startMbServer(2525)
 .then(function() {
   firstImposter.postToMountebank();
 });
@@ -51,8 +54,11 @@ lrMB.startMbServer()
 
 <h1>API</h1>
 
+<h3>MountebankHelper.startMbServer(port)</h3>
+<h5> port </h5> The port on which the main Mountebank server is to listen on
+This will start up the main Mountebank server and have it start listening for imposter create/update requests. This must be called before making any postToMountebank or updateResponse calls
 
-<h3>lr_MB.Imposter(port, protocol)</h3>
+<h3>MountebankHelper.Imposter(port, protocol)</h3>
 Constructor for the Imposter class which serves as the main entry point for interacting with Mountebank. <br>
 A single instance of an Imposter class represents a single Mountebank imposter listening on a single port. <br>
 <h5> port </h5> The port on which the Imposter is to listen on for incoming traffic
