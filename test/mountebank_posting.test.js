@@ -24,13 +24,13 @@ describe('Posting to MounteBank', function () {
         'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
       }
     };
-    const testImposter = new lrMB.Imposter(3000, 'http');
+    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3000 });
     testImposter.addRoute(sampleResponse);
     return testImposter.postToMountebank().should.be.eventually.fulfilled.and.have.property('status').and.equal(201);
   });
 
   it('Should return a resolved promise with a correct response on a update request', function () {
-    const testImposter = new lrMB.Imposter(3001, 'http');
+    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3001 });
     const sampleResponse = {
       'uri' : '/pets/123',
       'verb' : 'PUT',
@@ -64,7 +64,7 @@ describe('Posting to MounteBank', function () {
         'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
       }
     };
-    const testImposter = new lrMB.Imposter(3002, 'http');
+    const testImposter = new lrMB.Imposter({ 'imposterPort' : 3002 });
     testImposter.addRoute(sampleRespnse);
     return testImposter.postToMountebank()
     .then(function () {
