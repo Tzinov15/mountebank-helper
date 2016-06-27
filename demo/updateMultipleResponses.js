@@ -1,7 +1,7 @@
 'use strict';
 const randomWords = require('random-words');
 const myUtil = require('../util/util');
-const mbHelper = require('../src/mb_helper');
+const mbHelper = require('../src/index');
 
 const helloResponses = myUtil.returnResponsesForAllVerbs('hello');
 

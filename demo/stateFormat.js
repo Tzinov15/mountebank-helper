@@ -1,7 +1,7 @@
 'use strict';
 
 // import the mountebank helper library
-const mb_helper = require('../src/mb_helper');
+const mb_helper = require('../src/index');
 
 // create the skeleton for the imposter (does not post to MB)
 const firstImposter = new mb_helper.Imposter({ 'imposterPort' : 300 });
