@@ -1,18 +1,20 @@
 {
   "name": "mountebank-helper",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
+  "version": "2.0.0",
+  "repository": "https://github.com/Tzinov15/mountebank-helper",
+  "description": "A simple Javascript wrapper to easily interface with Mountebank and not have to deal with its abstract object structure requirements.",
+  "main": "./src/index.js",
   "scripts": {
-    "start": "node server.js",
-    "demo": "node demo.js",
     "demo-update": "node demo/updateMultipleResponses.js",
     "demo-format": "node demo/stateFormat.js",
     "demo-simple": "node demo/simple.js",
     "test": "mocha test/*.test.js"
   },
+  "engines" : {
+    "node" : ">=4.0.0"
+  },
   "keywords": [],
-  "author": "",
+  "author": "Alex Tzinov",
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.13.1",
