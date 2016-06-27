@@ -54,7 +54,7 @@ mbHelper.startMbServer(2525)
 
 ```
 
-Now you can navigate to <a>http://localhost:3000/hello</a> to see the mocked response!
+Now you can navigate to <a href>http://localhost:3000/hello</a> to see the mocked response!
 
 <h1>API</h1>
 
