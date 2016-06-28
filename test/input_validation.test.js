@@ -12,9 +12,8 @@ const expect = chai.expect;
 
 
 // import the mountebank helper library
-const mb_helper = require('../src/index');
-const Imposter = mb_helper.Imposter;
-const startMbServer = mb_helper.startMbServer;
+const mbHelper = require('../src/index');
+const Imposter = mbHelper.Imposter;
 
 // TODO: Also check for object properties on final response body
 

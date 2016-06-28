@@ -8,9 +8,9 @@ chai.use(chaiSubset);
 
 
 // import the mountebank helper library
-const mb_helper = require('../src/index');
-const Imposter = mb_helper.Imposter;
-const startMbServer = mb_helper.startMbServer;
+const mbHelper = require('../src/index');
+const Imposter = mbHelper.Imposter;
+const startMbServer = mbHelper.startMbServer;
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {

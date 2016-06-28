@@ -6,7 +6,6 @@
 
 const fetch = require('node-fetch');
 const _ = require('lodash');
-const mb = require('mountebank');
 
 class Imposter {
   /**
@@ -402,4 +401,3 @@ class Imposter {
 
 
 module.exports = Imposter;
-

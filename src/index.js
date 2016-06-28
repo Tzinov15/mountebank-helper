@@ -13,5 +13,4 @@ exports.startMbServer = function (port) {
     allowInjection : true,
   });
   return mbCreateResult;
-}
-
+};
