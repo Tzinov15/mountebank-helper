@@ -1,6 +1,9 @@
 <h1> MountebankHelper </h1>
 
 
+[![Build Status](https://travis-ci.org/Tzinov15/mountebank-helper.svg?branch=master)](https://travis-ci.org/Tzinov15/mountebank-helper)
+
+
 A simple Javascript wrapper to easily interface with <a href = 'http://www.mbtest.org/'>Mountebank</a> and not have to deal with its
 abstract object structure requirements. <br><br>
 
