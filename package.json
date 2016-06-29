@@ -29,6 +29,5 @@
     "chai-subset": "^1.2.2",
     "mocha": "^2.5.3",
     "eslint": "^1.2.1",
-    "eslint-config-logrhythm": "^1.0.7"
   }
 }
