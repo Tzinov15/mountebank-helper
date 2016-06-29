@@ -120,7 +120,7 @@ class Imposter {
         // create the MB friendly predicate and response portions
         const mbResponse = Imposter._createResponse(statusCode, responseHeaders, responseBody);
 
-        const mbPredicate = Imposter._createPredicate('equals', { 'method' : verb, 'path' : route } );
+        const mbPredicate = Imposter._createPredicate('matches', { 'method' : verb, 'path' : route } );
 
         // shove these portions into our final complete response in the form of a stub
         CompleteResponse.stubs.push({
