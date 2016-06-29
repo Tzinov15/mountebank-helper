@@ -11,6 +11,7 @@ chai.use(chaiSubset);
 const mbHelper = require('../src/index');
 const Imposter = mbHelper.Imposter;
 const startMbServer = mbHelper.startMbServer;
+const fetch = require('node-fetch');
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
@@ -76,5 +77,78 @@ describe('Posting to MounteBank', function () {
       return JSON.parse(JSON.parse(body).stubs[0].responses[0].is.body);
     })
     .should.eventually.have.key('updatedAttribute');
+  });
+
+  describe('Complete Imposter Test', function () {
+    it('The correct response is returned when hitting a route on which an imposter is listening on', function () {
+      console.log('hello');
+      const sampleRespnse = {
+        'uri' : '/pets/123',
+        'verb' : 'GET',
+        'res' : {
+          'statusCode': 200,
+          'responseHeaders' : { 'Content-Type' : 'application/json' },
+          'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+        }
+      };
+      const testImposter = new Imposter({ 'imposterPort' : 3009 });
+      testImposter.addRoute(sampleRespnse);
+      return testImposter.postToMountebank()
+      .then(function () {
+        console.log('hello from successful postToMountebank');
+        return fetch('http://localhost:3009/pets/123')
+        .then( response => {
+          return response.text();
+        })
+        .then( body => {
+          return body.should.equal(JSON.stringify({ 'somePetAttribute' : 'somePetValue' }));
+        })
+        .catch( error => {
+          console.log('error: ');
+          console.log(error);
+        });
+      })
+      .catch( error => {
+        console.log('error: ');
+        console.log(error);
+      });
+    });
+  });
+  describe('RegEx matching', function () {
+    before( function () {
+      const workingWordRegex = '/pets/\\w+/\\w+';
+      const anotherResponse = {
+        'uri' : workingWordRegex,
+        'verb' : 'GET',
+        'res' : {
+          'statusCode': 200,
+          'responseHeaders' : { 'Content-Type' : 'application/json' },
+          'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+        }
+      };
+      const testImposter = new Imposter({ 'imposterPort' : 3010 });
+      testImposter.addRoute(anotherResponse);
+      return testImposter.postToMountebank();
+    });
+    it('Hitting an imposter route setup with regex with a matching path should return the response', function () {
+      return fetch('http://localhost:3010/pets/hello/hi')
+      .then( response => {
+        return response.text();
+      })
+      .then( body => {
+        return body.should.equal(JSON.stringify({ 'somePetAttribute' : 'somePetValue' }));
+      });
+    });
+
+    it('Hitting an imposter route setup with regex with a non-matching path should return nothing', function () {
+      console.log('hello from successful postToMountebank');
+      return fetch('http://localhost:3010/pets/hello')
+      .then( response => {
+        return response.text();
+      })
+      .then( body => {
+        return body.should.equal('');
+      });
+    });
   });
 });
