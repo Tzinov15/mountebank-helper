@@ -1,6 +1,6 @@
 {
   "name": "mountebank-helper",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "repository": "https://github.com/Tzinov15/mountebank-helper",
   "description": "A simple Javascript wrapper to easily interface with Mountebank and not have to deal with its abstract object structure requirements.",
   "main": "./src/index.js",
