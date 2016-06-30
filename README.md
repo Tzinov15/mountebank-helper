@@ -53,7 +53,10 @@ firstImposter.addRoute(another_response);
 // start the MB server  and post our Imposter to listen!
 mbHelper.startMbServer(2525)
 .then(function() {
-  firstImposter.postToMountebank();
+  firstImposter.postToMountebank()
+  .then( () => {
+  console.log('Imposter Posted! Go to http://localhost:3000/hello');
+  });
 });
 
 ```
@@ -131,6 +134,7 @@ The content of the new headers that is to be returned by the imposter. Must be a
 <ul>
 <li> Support for fuzzy matching (via regex) on incoming-request body content (as opposed to exact path match) [DONE] </li> 
 <li> Include the process of starting the Mountebank server as part of existing Functionality (abstract it away from the client so they don't have to call startMbServer() )
-<li> Travis CI Build Setup </li>
+<li> Travis CI Build Setup [DONE] </li>
 <li> Post to NPM as installable module [DONE] </li>
+<li> Increase Code Coverage to 95% </li>
 </ul>
