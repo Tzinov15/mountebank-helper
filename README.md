@@ -131,6 +131,7 @@ The content of the new headers that is to be returned by the imposter. Must be a
 <ul>
 <li> Support for fuzzy matching (via regex) on incoming-request body content (as opposed to exact path match) [DONE] </li> 
 <li> Include the process of starting the Mountebank server as part of existing Functionality (abstract it away from the client so they don't have to call startMbServer() )
-<li> Travis CI Build Setup </li>
+<li> Travis CI Build Setup [DONE] </li>
 <li> Post to NPM as installable module [DONE] </li>
+<li> Increase Code Coverage to 95% </li>
 </ul>
