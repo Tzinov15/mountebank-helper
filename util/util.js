@@ -23,7 +23,8 @@ function returnResponsesForAllVerbs(uri) {
 }
 
 
-function returnNumResponses(num) {
+
+/*function returnNumResponses(num) {
   const responseArray = [];
   const verbArray = ['GET', 'POST', 'PUT', 'DELETE'];
   for (var i = 0; i < num; i++) {
@@ -47,7 +48,7 @@ function returnNumResponses(num) {
   }
   return responseArray;
 }
-
+*/
 
 module.exports.returnResponsesForAllVerbs = returnResponsesForAllVerbs;
 module.exports.returnNumResponses = returnNumResponses;
