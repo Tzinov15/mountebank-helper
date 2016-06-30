@@ -81,7 +81,6 @@ describe('Posting to MounteBank', function () {
 
   describe('Complete Imposter Test', function () {
     it('The correct response is returned when hitting a route on which an imposter is listening on', function () {
-      console.log('hello');
       const sampleRespnse = {
         'uri' : '/pets/123',
         'verb' : 'GET',
@@ -95,7 +94,6 @@ describe('Posting to MounteBank', function () {
       testImposter.addRoute(sampleRespnse);
       return testImposter.postToMountebank()
       .then(function () {
-        console.log('hello from successful postToMountebank');
         return fetch('http://localhost:3009/pets/123')
         .then( response => {
           return response.text();
@@ -141,7 +139,6 @@ describe('Posting to MounteBank', function () {
     });
 
     it('Hitting an imposter route setup with regex with a non-matching path should return nothing', function () {
-      console.log('hello from successful postToMountebank');
       return fetch('http://localhost:3010/pets/hello')
       .then( response => {
         return response.text();
