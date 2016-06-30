@@ -209,8 +209,7 @@ class Imposter {
     }
     catch (e) {
       if (e instanceof TypeError) { // A TypeError will be thrown if the uri supplied doesn't exist in our swagger-like state
-        console.error(`ERROR (_getResponse) : Could not find a response for ${verb} ${uri}`);
-        throw new TypeError(e.message);
+        throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${uri}`);
       }
       else {
         console.error(`ERROR: ${e.message}`);
@@ -220,8 +219,7 @@ class Imposter {
     // if the uri exists but the corresponding supplied verb does NOT, a TypeError above won't be thrown, but
     // responseToUpdate will be null so we check for that here
     if (responseToUpdate == null) {
-      console.error(`ERROR: Could not find a response for ${verb} ${uri}`);
-      throw new TypeError(`ERROR: Could not find a response for ${verb} ${uri}`);
+        throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${verb}${uri}`);
     }
     // Return our successfully retrieved response
     return responseToUpdate;
@@ -295,7 +293,7 @@ class Imposter {
       throw new TypeError('pathToUpdate.verb must be a string');
     }
     if (!_.isObject(newHeaders)) {
-      throw new TypeError('newHeaders must be a object');
+      throw new TypeError('newHeaders must be an object');
     }
     return this._updateResponse(newHeaders, 'responseHeaders', pathToUpdate);
   }
