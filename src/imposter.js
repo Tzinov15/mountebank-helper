@@ -213,7 +213,7 @@ class Imposter {
       }
       else {
         console.error(`ERROR: ${e.message}`);
-        throw new TypeError(e.message);
+        throw new Error(e.message);
       }
     }
     // if the uri exists but the corresponding supplied verb does NOT, a TypeError above won't be thrown, but
