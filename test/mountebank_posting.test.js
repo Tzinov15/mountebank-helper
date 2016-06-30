@@ -13,6 +13,55 @@ const Imposter = mbHelper.Imposter;
 const startMbServer = mbHelper.startMbServer;
 const fetch = require('node-fetch');
 
+
+describe('Posting when Mountebank is not running', function () {
+  it('postToMountebank should reject when MB is not running', function () {
+    const sampleResponse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3000 });
+    testImposter.addRoute(sampleResponse);
+    return testImposter.postToMountebank().should.be.eventually.rejected;
+  });
+
+  it('_deleteOldImposter should reject when MB is not running', function () {
+    const sampleResponse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3000 });
+    testImposter.addRoute(sampleResponse);
+    return testImposter._deleteOldImposter().should.be.eventually.rejected;
+  });
+
+  it('_updateResponse should reject when MB is not running', function () {
+    const sampleResponse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3000 });
+    testImposter.addRoute(sampleResponse);
+    return testImposter._updateResponse(JSON.stringify({ 'Content-Type' : 'application/json' }), 'contentToUpdate', { 'uri' : '/pets/123', 'verb': 'PUT' })
+    .should.be.eventually.rejected;
+  });
+});
+
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
     startMbServer(2525);
@@ -77,6 +126,51 @@ describe('Posting to MounteBank', function () {
       return JSON.parse(JSON.parse(body).stubs[0].responses[0].is.body);
     })
     .should.eventually.have.key('updatedAttribute');
+  });
+
+  it('Should return the correctly updated response code on an update', function () {
+    const sampleRespnse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3002 });
+    testImposter.addRoute(sampleRespnse);
+    return testImposter.postToMountebank()
+    .then(function () {
+      return testImposter.updateResponseCode(201, { 'uri' : '/pets/123', 'verb' : 'PUT' });
+    })
+    .then(function (body) {
+      return JSON.parse(body).stubs[0].responses[0].is.statuscode;
+    })
+    .should.eventually.equal(201);
+  });
+
+
+  it('Should return the correctly updated headers on an update', function () {
+    const sampleRespnse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3002 });
+    testImposter.addRoute(sampleRespnse);
+    return testImposter.postToMountebank()
+    .then(function () {
+      return testImposter.updateResponseHeaders({ 'Content-Type' : 'application/xml' }, { 'uri' : '/pets/123', 'verb' : 'PUT' });
+    })
+    .then(function (body) {
+      return JSON.parse(body).stubs[0].responses[0].is.headers;
+    })
+    .should.eventually.deep.equal({ 'Content-Type' : 'application/xml' });
   });
 
   describe('Complete Imposter Test', function () {
