@@ -389,7 +389,7 @@ class Imposter {
     return fetchReturnValue;
   }
 
-  getStateReponse() {
+  getStateResponse() {
     return this.ImposterInformation.routeInformation;
   }
   getMountebankResponse() {
