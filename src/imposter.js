@@ -219,7 +219,7 @@ class Imposter {
     // if the uri exists but the corresponding supplied verb does NOT, a TypeError above won't be thrown, but
     // responseToUpdate will be null so we check for that here
     if (responseToUpdate == null) {
-        throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${verb}${uri}`);
+      throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${verb}${uri}`);
     }
     // Return our successfully retrieved response
     return responseToUpdate;
