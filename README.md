@@ -53,7 +53,10 @@ firstImposter.addRoute(another_response);
 // start the MB server  and post our Imposter to listen!
 mbHelper.startMbServer(2525)
 .then(function() {
-  firstImposter.postToMountebank();
+  firstImposter.postToMountebank()
+  .then( () => {
+  console.log('Imposter Posted! Go to http://localhost:3000/hello');
+  });
 });
 
 ```
