@@ -51,4 +51,4 @@ function returnResponsesForAllVerbs(uri) {
 */
 
 module.exports.returnResponsesForAllVerbs = returnResponsesForAllVerbs;
-module.exports.returnNumResponses = returnNumResponses;
+//module.exports.returnNumResponses = returnNumResponses;
