@@ -7,7 +7,7 @@
   "scripts": {
     "demo-update": "node demo/updateMultipleResponses.js",
     "demo-format": "node demo/stateFormat.js",
-    "demo-simple": "node demo/simple.js",
+    "demo-basic": "node demo/basic.js",
     "demo-regex": "node demo/regex_path.js",
     "test": "./node_modules/mocha/bin/mocha test/*.test.js",
     "test-travis": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -R spec ./test/*.test.js"
@@ -21,7 +21,8 @@
   "dependencies": {
     "lodash": "^4.13.1",
     "mountebank": "^1.5.1-beta.1115",
-    "node-fetch": "^1.5.3"
+    "node-fetch": "^1.5.3",
+    "tcp-port-used": "^0.1.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",

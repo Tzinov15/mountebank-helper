@@ -64,7 +64,7 @@ describe('Posting when Mountebank is not running', function () {
 
 describe('Posting to MounteBank', function () {
   before(function startUpMounteBank() {
-    startMbServer(2525);
+    return startMbServer(2525);
   });
   it('Should return a resolved promise on a good request', function () {
     const sampleResponse = {
