@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.13.1",
-    "mountebank": "^1.5.1-beta.1115",
+    "mountebank": "bbyars/mountebank",
     "node-fetch": "^1.5.3",
     "tcp-port-used": "^0.1.2"
   },
