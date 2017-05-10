@@ -7,7 +7,7 @@
 
 
 A simple Javascript wrapper to easily interface with <a href = 'http://www.mbtest.org/'>Mountebank</a> and not have to deal with its
-abstract object structure requirements. <br><br>
+abstract object structure requirements. See **[SwaggerBank](https://tzinov15.github.io/swagger-bank/)** for easy intergration with Swagger Specs/YAML files <br><br>
 
 While not providing an API for the full feature list that mountebank has, MountebankHelper provides enough functionality so that it reflects the core purpose of Mountebank and is easy to use at the same time. <br>
 
