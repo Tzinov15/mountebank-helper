@@ -7,6 +7,11 @@
 const fetch = require('node-fetch');
 const _ = require('lodash');
 
+function flatten(data) {
+  return data.reduce((r, e) => r.concat(Array.isArray(e) ? flatten(e) : [e]), [])
+}
+
+
 class Imposter {
   /**
    * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
@@ -32,10 +37,10 @@ class Imposter {
     }
     /* This is the JSON representation of our available routes. This will be formatted similarly to swagger. This is NOT the body of our Imposter POST request */
     this.ImposterInformation = {
-      'imposterPort' : options.imposterPort,
-      'mountebankPort' : options.mountebankPort,
+      'imposterPort': options.imposterPort,
+      'mountebankPort': options.mountebankPort,
       'protocol': options.protocol,
-      'routeInformation' : {}
+      'routeInformation': {}
     };
   }
 
@@ -72,6 +77,9 @@ class Imposter {
     if (!_.isObject(routeOptions.res)) {
       throw new TypeError('routeOptions.res must be an object');
     }
+    if (routeOptions.predicates && !_.isObject(routeOptions.predicates)) {
+      throw new TypeError('routeOptions.predicates must be an object');
+    }
     if (!_.isNumber(routeOptions.res.statusCode)) {
       throw new TypeError('routeOptions.res.statusCode must be a number');
     }
@@ -82,19 +90,33 @@ class Imposter {
       throw new TypeError('routeOptions.res.responseHeaders must be an object');
     }
 
+    routeOptions.predicates = routeOptions.predicates || []
+
     const normalizedURI = this._normalizeURI(routeOptions.uri);
+    let uriInfo = this.ImposterInformation.routeInformation[normalizedURI]
+    const verb = routeOptions.verb
 
     /* If we already have an existing object for the given URI (from a different verb),
      * we just want to add the new key value pair consisting of our new verb and its respective response */
-    if ( (this.ImposterInformation.routeInformation[normalizedURI]) != null) {
-      this.ImposterInformation.routeInformation[normalizedURI][routeOptions.verb] = routeOptions.res;
+    if (uriInfo != null) {
+      let verbInfo = uriInfo[verb]
+      verbInfo = verbInfo || {}
+      verbInfo.name = verb
+      verbInfo.response = routeOptions.res;
+      verbInfo.predicates = routeOptions.predicates;
+      uriInfo[verb] = verbInfo
     }
     /* If this is the first verb-response stub for this path, we can just create it  */
     else {
-      this.ImposterInformation.routeInformation[normalizedURI] = {
-        [routeOptions.verb] : routeOptions.res
+      uriInfo = {
+        [verb]: {
+          name: routeOptions.verb,
+          response: routeOptions.res,
+          predicates: routeOptions.predicates,
+        }
       };
     }
+    this.ImposterInformation.routeInformation[normalizedURI] = uriInfo
   }
 
   /* This will take our state (our swagger-like representation of our routes) and construct our mountebank-formatted body
@@ -103,28 +125,54 @@ class Imposter {
    */
   _createMBPostRequestBody() {
     const CompleteResponse = {
-      'port' : this.ImposterInformation.imposterPort,
+      'port': this.ImposterInformation.imposterPort,
       'protocol': this.ImposterInformation.protocol,
       'stubs': []
     };
 
     // for each route we have in our state...
     for (const route in this.ImposterInformation.routeInformation) {
+      const routeInfo = this.ImposterInformation.routeInformation[route]
+      const verbs = Object.keys(routeInfo)
+
       // for each verb contained within that one route...
-      for (const verb in this.ImposterInformation.routeInformation[route]) {
+      for (const verb of verbs) {
+        const verbInfo = routeInfo[verb]
+        const response = verbInfo.response
         // extract the necessary attributes from our response (a verb and route uniquely identifies a single response)
-        const statusCode = this.ImposterInformation.routeInformation[route][verb].statusCode;
-        const responseHeaders = this.ImposterInformation.routeInformation[route][verb].responseHeaders;
-        const responseBody = this.ImposterInformation.routeInformation[route][verb].responseBody;
+        const statusCode = response.statusCode;
+        const responseHeaders = response.responseHeaders;
+        const responseBody = response.responseBody;
 
         // create the MB friendly predicate and response portions
         const mbResponse = Imposter._createResponse(statusCode, responseHeaders, responseBody);
 
-        const mbPredicate = Imposter._createPredicate('matches', { 'method' : verb, 'path' : route } );
+        const predicates = verbInfo.predicates || []
+        let mbPredicates = []
+
+        if (predicates.length > 0) {
+          mbPredicates = predicates.map(predicateObj => {
+            return Object.keys(predicateObj).map(predicateType => {
+              let predicate = predicateObj[predicateType]
+              return Imposter._createPredicate(predicateType, predicate);
+            })
+          })
+          mbPredicates = flatten(mbPredicates)
+        }
+
+        if (!mbPredicates || mbPredicates.length === 0) {
+          const mbPredicate = Imposter._createPredicate('matches', {
+            'method': verb,
+            'path': route
+          });
+          mbPredicates.push(mbPredicate)
+        } else {
+          // no predicates
+        }
 
         // shove these portions into our final complete response in the form of a stub
         CompleteResponse.stubs.push({
-          predicates:[mbPredicate],
+          predicates: mbPredicates,
           responses: [mbResponse]
         });
       }
@@ -200,18 +248,18 @@ class Imposter {
       throw new TypeError('pathToUpdate.verb must be a string');
     }
     const verb = pathToUpdate.verb;
-    const uri =  pathToUpdate.uri;
-    let responseToUpdate;
+    const uri = pathToUpdate.uri;
+    let responseToUpdate, uriInfo, verbInfo;
 
     // try to retrieve the response from our state based on the passed in uri and verb
     try {
-      responseToUpdate = this.ImposterInformation.routeInformation[uri][verb];
-    }
-    catch (e) {
+      uriInfo = this.ImposterInformation.routeInformation[uri]
+      verbInfo = uriInfo[verb]
+      responseToUpdate = verbInfo //.response;
+    } catch (e) {
       if (e instanceof TypeError) { // A TypeError will be thrown if the uri supplied doesn't exist in our swagger-like state
         throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${uri}`);
-      }
-      else {
+      } else {
         console.error(`ERROR: ${e.message}`);
         throw new Error(e.message);
       }
@@ -221,6 +269,9 @@ class Imposter {
     if (responseToUpdate == null) {
       throw new TypeError(`ERROR (_getResponse) : Could not find a response for ${verb}${uri}`);
     }
+
+    responseToUpdate = verbInfo.response
+
     // Return our successfully retrieved response
     return responseToUpdate;
   }
@@ -233,8 +284,10 @@ class Imposter {
    */
   _deleteOldImposter() {
     // make DELETE request to the mountebank server (through fetch)...
-    return fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, { method: 'delete' })
-      .then(function (response) {   // retrieve the text body from the response
+    return fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, {
+        method: 'delete'
+      })
+      .then(function (response) { // retrieve the text body from the response
         return response.text();
       })
       .then(function (body) {
@@ -366,7 +419,13 @@ class Imposter {
     // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
     const mbPort = this.ImposterInformation.mountebankPort;
     return this._deleteOldImposter().then(function () {
-      return fetch(`http://127.0.0.1:${mbPort}/imposters`, { method: 'post', headers: { 'content-type' : 'application/json' }, body: JSON.stringify(updatedMounteBankRequest) })
+      return fetch(`http://127.0.0.1:${mbPort}/imposters`, {
+          method: 'post',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify(updatedMounteBankRequest)
+        })
         .then(function (response) {
           return response.text();
         })
@@ -385,7 +444,13 @@ class Imposter {
    */
   postToMountebank() {
     const MBBody = this._createMBPostRequestBody();
-    const fetchReturnValue = fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters`, { method: 'POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify(MBBody) });
+    const fetchReturnValue = fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(MBBody)
+    });
     return fetchReturnValue;
   }
 

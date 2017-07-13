@@ -19,30 +19,20 @@ function pretty(obj) {
   return JSON.stringify(obj, null, 2)
 }
 
-describe('Construction of Predicates, Responses, Stubs', function () {
 
-  it('Construction of Predicate should return properly formatted predicate', function () {
-    expect(JSON.stringify(Imposter._createPredicate('equals', {
-      'method': 'get',
-      'path': '/newpage'
-    }))).to.equal(JSON.stringify(testStubs.samplePredicate));
-  });
-
-  it('Construction of Response should return properly formatted response', function () {
-    expect(JSON.stringify(Imposter._createResponse(200, {
-      'Content-Type': 'application/json'
-    }, JSON.stringify({
-      'hello': 'world'
-    })))).to.equal(JSON.stringify(testStubs.sampleReponse));
-  });
-});
-
-describe('Route Information and MB Post Request Body', function () {
+describe('Route Information with custom predicates and MB Post Request Body', function () {
   const someImposter = new Imposter({
     'imposterPort': 3000
   });
-  const bunchOfResponses = myUtil.returnResponsesForAllVerbs('/areas');
-  it('Imposter state should contain correct information after several addRoute calls', function () {
+
+  const predicates = [{
+    deepEquals: {
+      'body': 'Hello'
+    }
+  }]
+
+  const bunchOfResponses = myUtil.returnResponsesForAllVerbs('/areas', predicates);
+  it('Imposter state should contain information with custom predicates after several addRoute calls', function () {
     bunchOfResponses.forEach((element, index, array) => {
       someImposter.addRoute(element);
     });
@@ -55,7 +45,7 @@ describe('Route Information and MB Post Request Body', function () {
         },
         responseBody: '{"/areas":"GET"}'
       },
-      predicates: []
+      predicates
     };
     const POST = {
       name: 'POST',
@@ -66,7 +56,7 @@ describe('Route Information and MB Post Request Body', function () {
         },
         responseBody: '{"/areas":"POST"}'
       },
-      predicates: []
+      predicates
     }
 
     const PUT = {
@@ -78,7 +68,7 @@ describe('Route Information and MB Post Request Body', function () {
         },
         responseBody: '{"/areas":"PUT"}'
       },
-      predicates: []
+      predicates
     }
     const DELETE = {
       name: 'DELETE',
@@ -89,7 +79,7 @@ describe('Route Information and MB Post Request Body', function () {
         },
         responseBody: '{"/areas":"DELETE"}'
       },
-      predicates: []
+      predicates
     }
 
     const response = someImposter.getStateResponse()
@@ -109,18 +99,13 @@ describe('Route Information and MB Post Request Body', function () {
     // });
   });
 
-  it('Mountebank Response Body should be correctly formatted after several addRoute calls', function () {
+  it('Mountebank Response Body should be correctly formatted with custom predicates after several addRoute calls', function () {
     const response = someImposter.getMountebankResponse()
     const stubs = response.stubs
     const stub = stubs[0]
 
     const expectedStubs = [{
-        predicates: [{
-          matches: {
-            method: 'GET',
-            path: '/areas'
-          }
-        }],
+        predicates,
         responses: [{
           is: {
             statuscode: 200,
@@ -132,12 +117,7 @@ describe('Route Information and MB Post Request Body', function () {
         }]
       },
       {
-        predicates: [{
-          matches: {
-            method: 'POST',
-            path: '/areas'
-          }
-        }],
+        predicates,
         responses: [{
           is: {
             statuscode: 200,
@@ -149,12 +129,7 @@ describe('Route Information and MB Post Request Body', function () {
         }]
       },
       {
-        predicates: [{
-          matches: {
-            method: 'PUT',
-            path: '/areas'
-          }
-        }],
+        predicates,
         responses: [{
           is: {
             statuscode: 200,
@@ -166,12 +141,7 @@ describe('Route Information and MB Post Request Body', function () {
         }]
       },
       {
-        predicates: [{
-          matches: {
-            method: 'DELETE',
-            path: '/areas'
-          }
-        }],
+        predicates,
         responses: [{
           is: {
             statuscode: 200,
