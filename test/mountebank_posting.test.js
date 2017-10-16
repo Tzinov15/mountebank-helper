@@ -145,7 +145,7 @@ describe('Posting to MounteBank', function () {
       return testImposter.updateResponseCode(201, { 'uri' : '/pets/123', 'verb' : 'PUT' });
     })
     .then(function (body) {
-      return JSON.parse(body).stubs[0].responses[0].is.statuscode;
+      return JSON.parse(body).stubs[0].responses[0].is.statusCode;
     })
     .should.eventually.equal(201);
   });

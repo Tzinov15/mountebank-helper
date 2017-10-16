@@ -108,7 +108,7 @@ describe('Route Information with custom predicates and MB Post Request Body', fu
         predicates,
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -120,7 +120,7 @@ describe('Route Information with custom predicates and MB Post Request Body', fu
         predicates,
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -132,7 +132,7 @@ describe('Route Information with custom predicates and MB Post Request Body', fu
         predicates,
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -144,7 +144,7 @@ describe('Route Information with custom predicates and MB Post Request Body', fu
         predicates,
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
