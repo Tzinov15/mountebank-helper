@@ -56,6 +56,32 @@ describe('Input Validation', function () {
         });
       }).to.not.throw();
     });
+
+    describe ('Host url', function() {
+      afterEach(function () {
+        delete process.env.MOUNTEBANK_HOST;
+      });
+      
+      it('Should use the mountebank server host supplied in the options', function () {
+        expect(new Imposter({
+          'mountebankHost': 'opt-host.com',
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('opt-host.com');
+      });
+
+      it('Should use the mountebank server host supplied in the environment', function () {
+        process.env.MOUNTEBANK_HOST = 'env-host.info'
+        expect(new Imposter({
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('env-host.info');
+      });
+
+      it('Should default the mountebank server host 127.0.0.1 when host is not supplied', function () {
+        expect(new Imposter({
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('127.0.0.1');
+      });
+    });
   });
 
   describe('Response Construction', function () {
