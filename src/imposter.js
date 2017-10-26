@@ -16,6 +16,7 @@ class Imposter {
   /**
    * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
    * @param  {Object} options     The set of options to configure the imposter
+   * @param  {String} options.mountebankHost     The name of the network host or ip address of the Mountebank server (defaults to 127.0.0.1)
    * @param  {Number} options.mountebankPort     The port number on which the Mountebank server is to listen on (defaults to 2525)
    * @param  {Number} options.imposterPort     The port number on which this particular Imposter is to listen on
    * @param  {String} options.protocol     The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp (defaults to http)
