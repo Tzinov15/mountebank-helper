@@ -187,14 +187,14 @@ class Imposter {
 
   /**
    * This will take in the desired response components (status, headers, and body) and construct a mountebank-style response. Takes care of rigid formatting that MB requires
-   * @param  {Number} statuscode The status code that the user wishes to have returned from the imposter
+   * @param  {Number} statusCode The status code that the user wishes to have returned from the imposter
    * @param  {Object} headers    The headers to be returned as part of the imposters response
    * @param  {String} body       The body to be returned as part of the imposters response
    * @return {Object}            The mountebank-formatted response object that can be added as part of a mountebank stub
    */
-  static _createResponse(statuscode, headers, body) {
-    if (!_.isNumber(statuscode)) {
-      throw new TypeError('statuscode must be a number');
+  static _createResponse(statusCode, headers, body) {
+    if (!_.isNumber(statusCode)) {
+      throw new TypeError('statusCode must be a number');
     }
     if (!_.isObject(headers)) {
       throw new TypeError('headers must be an object');
@@ -205,7 +205,7 @@ class Imposter {
     const finalResponse = {};
     const response = {};
 
-    response.statuscode = statuscode;
+    response.statusCode = statusCode;
     response.headers = headers;
     response.body = body;
     /* A mountebank formatting thing where each response has a type (is, proxy, or inject) and this type must be specified in the form of a key where the value the actual response */

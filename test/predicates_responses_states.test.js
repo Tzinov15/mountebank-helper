@@ -123,7 +123,7 @@ describe('Route Information and MB Post Request Body', function () {
         }],
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -140,7 +140,7 @@ describe('Route Information and MB Post Request Body', function () {
         }],
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -157,7 +157,7 @@ describe('Route Information and MB Post Request Body', function () {
         }],
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },
@@ -174,7 +174,7 @@ describe('Route Information and MB Post Request Body', function () {
         }],
         responses: [{
           is: {
-            statuscode: 200,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json'
             },

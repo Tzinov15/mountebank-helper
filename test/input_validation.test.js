@@ -59,14 +59,14 @@ describe('Input Validation', function () {
   });
 
   describe('Response Construction', function () {
-    it('Should throw if statuscode is not a number', function () {
+    it('Should throw if statusCode is not a number', function () {
       expect(function () {
         Imposter._createResponse('hello', {
           'Content-Type': 'application/json'
         }, JSON.stringify({
           'hello': 'world'
         }));
-      }).to.throw('statuscode must be a number');
+      }).to.throw('statusCode must be a number');
     });
     it('Should throw if headers is not an object', function () {
       expect(function () {

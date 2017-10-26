@@ -6,7 +6,7 @@ module.exports.samplePredicate = {
 
 module.exports.sampleReponse = {
   is: {
-    statuscode: 200,
+    statusCode: 200,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 'hello' : 'world' })
   }
