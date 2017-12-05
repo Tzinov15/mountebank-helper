@@ -41,13 +41,6 @@ describe('Input Validation', function () {
       }).ImposterInformation.protocol).to.equal('http');
     });
 
-    it('Should default to setting mountebankPort to 2525 if one is not supplied', function () {
-      expect(new Imposter({
-        'protocol': 'http',
-        'imposterPort': 3000
-      }).ImposterInformation.mountebankPort).to.equal(2525);
-    });
-
     it('Should NOT throw if proper arguments are specified', function () {
       expect(function () {
         new Imposter({
@@ -55,6 +48,55 @@ describe('Input Validation', function () {
           'imposterPort': 3000
         });
       }).to.not.throw();
+    });
+
+    describe ('Mountebank server url', function() {
+      afterEach(function () {
+        delete process.env.MOUNTEBANK_HOST;
+        delete process.env.MOUNTEBANK_PORT;
+      });
+      
+      it('Should set the mountebankHost to the value supplied in the options.mountebankHost', function () {
+        expect(new Imposter({
+          'mountebankHost': 'opt-host.com',
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('opt-host.com');
+      });
+
+      it('Should set the mountebankHost to the value supplied in the MOUNTEBANK_HOST environment variable', function () {
+        process.env.MOUNTEBANK_HOST = 'env-host.info'
+        expect(new Imposter({
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('env-host.info');
+      });
+
+      it('Should default mountebankHost to 127.0.0.1 when options.mountebankHost is not supplied', function () {
+        expect(new Imposter({
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankHost).to.equal('127.0.0.1');
+      });
+      
+      it('Should set mountebankPort to the one supplied in optiont.mountebankPort', function () {
+        expect(new Imposter({
+          'mountebankPort': 666,
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankPort).to.equal(666);
+      });
+      
+      it('Should set mountebankPort to the one supplied in MOUNTEBANK_PORT environment variable', function () {
+        process.env.MOUNTEBANK_PORT = 6666;
+        expect(new Imposter({
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankPort).to.equal('6666');
+      });
+      
+      it('Should default to setting mountebankPort to 2525 if one is not supplied', function () {
+        expect(new Imposter({
+          'protocol': 'http',
+          'imposterPort': 3000
+        }).ImposterInformation.mountebankPort).to.equal(2525);
+      });
+
     });
   });
 

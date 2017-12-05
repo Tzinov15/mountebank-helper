@@ -16,6 +16,7 @@ class Imposter {
   /**
    * Sets up the skeleton for the routeInformation POST request body that will be sent to the Mountebank server to set up the imposter
    * @param  {Object} options     The set of options to configure the imposter
+   * @param  {String} options.mountebankHost     The name of the network host or ip address of the Mountebank server (defaults to 127.0.0.1)
    * @param  {Number} options.mountebankPort     The port number on which the Mountebank server is to listen on (defaults to 2525)
    * @param  {Number} options.imposterPort     The port number on which this particular Imposter is to listen on
    * @param  {String} options.protocol     The protocol that the imposter is to listen on. Options are http, https, tcp, and smtp (defaults to http)
@@ -32,13 +33,17 @@ class Imposter {
     if (options.protocol == null) {
       options.protocol = 'http';
     }
+    if (options.mountebankHost == null) {
+      options.mountebankHost = process.env.MOUNTEBANK_HOST || '127.0.0.1'
+    }
     if (options.mountebankPort == null) {
-      options.mountebankPort = 2525;
+      options.mountebankPort = process.env.MOUNTEBANK_PORT || 2525;
     }
     /* This is the JSON representation of our available routes. This will be formatted similarly to swagger. This is NOT the body of our Imposter POST request */
     this.ImposterInformation = {
       'imposterPort': options.imposterPort,
       'mountebankPort': options.mountebankPort,
+      'mountebankHost': options.mountebankHost,
       'protocol': options.protocol,
       'routeInformation': {}
     };
@@ -284,7 +289,7 @@ class Imposter {
    */
   _deleteOldImposter() {
     // make DELETE request to the mountebank server (through fetch)...
-    return fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, {
+    return fetch(`http://${this.ImposterInformation.mountebankHost}:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, {
         method: 'delete'
       })
       .then(function (response) { // retrieve the text body from the response
@@ -417,9 +422,10 @@ class Imposter {
     const updatedMounteBankRequest = this._createMBPostRequestBody();
 
     // only on a resolved promise from _deleteOldImposter do we post our new-updated Imposter. This is to prevent posting a new imposter before the one is deleted
+    const mbHost = this.ImposterInformation.mountebankHost;
     const mbPort = this.ImposterInformation.mountebankPort;
     return this._deleteOldImposter().then(function () {
-      return fetch(`http://127.0.0.1:${mbPort}/imposters`, {
+      return fetch(`http://${mbHost}:${mbPort}/imposters`, {
           method: 'post',
           headers: {
             'content-type': 'application/json'
@@ -444,7 +450,7 @@ class Imposter {
    */
   postToMountebank() {
     const MBBody = this._createMBPostRequestBody();
-    const fetchReturnValue = fetch(`http://127.0.0.1:${this.ImposterInformation.mountebankPort}/imposters`, {
+    const fetchReturnValue = fetch(`http://${this.ImposterInformation.mountebankHost}:${this.ImposterInformation.mountebankPort}/imposters`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
