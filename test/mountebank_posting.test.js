@@ -45,6 +45,21 @@ describe('Posting when Mountebank is not running', function () {
     return testImposter._deleteOldImposter().should.be.eventually.rejected;
   });
 
+  it('getImposter should reject when MB is not running', function () {
+    const sampleResponse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3000 });
+    testImposter.addRoute(sampleResponse);
+    return testImposter.getImposter().should.be.eventually.rejected;
+  });
+
   it('_updateResponse should reject when MB is not running', function () {
     const sampleResponse = {
       'uri' : '/pets/123',
@@ -174,6 +189,36 @@ describe('Posting to MounteBank', function () {
   });
 
   describe('Complete Imposter Test', function () {
+    it('should return the imposter', function () {
+      const sampleRespnse = {
+        'uri' : '/pets/123',
+        'verb' : 'GET',
+        'res' : {
+          'statusCode': 200,
+          'responseHeaders' : { 'Content-Type' : 'application/json' },
+          'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+        }
+      };
+      const testImposter = new Imposter({ 'imposterPort' : 3009 });
+      testImposter.addRoute(sampleRespnse);
+      testImposter.postToMountebank();
+      return testImposter.getImposter().then((response) => {
+        response.body.should.equal({
+          'uri' : '/pets/123',
+          'verb' : 'GET',
+          'res' : {
+            'statusCode': 200,
+            'responseHeaders' : { 'Content-Type' : 'application/json' },
+            'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+          }
+        });
+      })
+        .catch( error => {
+          console.log('error: ');
+          console.log(error);
+        });
+    });
+
     it('The correct response is returned when hitting a route on which an imposter is listening on', function () {
       const sampleRespnse = {
         'uri' : '/pets/123',
