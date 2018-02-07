@@ -131,6 +131,10 @@ The content of the new headers that is to be returned by the imposter. Must be a
 }
 ```
 
+<h3>Imposter.getImposter()</h3>
+Performs a GET request to the Mountebank server to get the current state of the Imposter including details of each request.
+Returns a Promise that resolves to the response returned from the Mountebank server
+
 <h2> Functionality / Features Not Yet Implemented </h2>
 <ul>
 <li> Support for fuzzy matching (via regex) on incoming-request body content (as opposed to exact path match) [DONE] </li> 
