@@ -10,6 +10,7 @@ chai.use(chaiSubset);
 // import the mountebank helper library
 const mbHelper = require('../src/index');
 const Imposter = mbHelper.Imposter;
+const Utils = mbHelper.Utils;
 const startMbServer = mbHelper.startMbServer;
 const fetch = require('node-fetch');
 
@@ -43,6 +44,25 @@ describe('Posting when Mountebank is not running', function () {
     const testImposter = new Imposter({ 'imposterPort' : 3000 });
     testImposter.addRoute(sampleResponse);
     return testImposter._deleteOldImposter().should.be.eventually.rejected;
+  });
+
+  it('getImposter should reject when MB is not running', function () {
+    const sampleResponse = {
+      'uri' : '/pets/123',
+      'verb' : 'PUT',
+      'res' : {
+        'statusCode': 200,
+        'responseHeaders' : { 'Content-Type' : 'application/json' },
+        'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+      }
+    };
+    const testImposter = new Imposter({ 'imposterPort' : 3000 });
+    testImposter.addRoute(sampleResponse);
+    return testImposter.getImposter().should.be.eventually.rejected;
+  });
+
+  it('deleteImposters should reject when MB is not running', function () {
+    return new Utils({}).deleteImposters().should.be.eventually.rejected;
   });
 
   it('_updateResponse should reject when MB is not running', function () {
@@ -173,7 +193,66 @@ describe('Posting to MounteBank', function () {
     .should.eventually.deep.equal({ 'Content-Type' : 'application/xml' });
   });
 
+  describe('Delete Imposters Test', function () {
+    const testUtil = new Utils({});
+    before(function startUpMounteBank() {
+      testUtil.deleteImposters();
+    });
+    it('should delete the imposter', function () {
+      const sampleRespnse = {
+        'uri': '/pets/123',
+        'verb': 'GET',
+        'res': {
+          'statusCode': 200,
+          'responseHeaders': {'Content-Type': 'application/json'},
+          'responseBody': JSON.stringify({'somePetAttribute': 'somePetValue'})
+        }
+      };
+      const testImposterA = new Imposter({'imposterPort': 3008});
+      testImposterA.addRoute(sampleRespnse);
+      testImposterA.postToMountebank();
+      const testImposterB = new Imposter({'imposterPort': 3009});
+      testImposterB.addRoute(sampleRespnse);
+      testImposterB.postToMountebank();
+
+      return testUtil.deleteImposters().then((response) => {
+        response = JSON.parse(response);
+        response.imposters.length.should.equal(2);
+        response.imposters[0].port.should.equal(3008);
+        response.imposters[1].port.should.equal(3009);
+      })
+        .catch(error => {
+          throw new Error(error);
+        });
+    });
+  });
+
   describe('Complete Imposter Test', function () {
+    it('should return the imposter', function () {
+      const sampleRespnse = {
+        'uri' : '/pets/123',
+        'verb' : 'GET',
+        'res' : {
+          'statusCode': 200,
+          'responseHeaders' : { 'Content-Type' : 'application/json' },
+          'responseBody' : JSON.stringify({ 'somePetAttribute' : 'somePetValue' })
+        }
+      };
+      const testImposter = new Imposter({ 'imposterPort' : 3009 });
+      testImposter.addRoute(sampleRespnse);
+      testImposter.postToMountebank();
+      return testImposter.getImposter().then((response) => {
+        response = JSON.parse(response);
+        response.port.should.equal(3009);
+        response.stubs[0].predicates[0].matches.method.should.equal("GET");
+        response.stubs[0].predicates[0].matches.path.should.equal("/pets/123");
+        response.stubs[0].responses[0].is.body.should.equal(JSON.stringify({ 'somePetAttribute' : 'somePetValue' }));
+      })
+        .catch( error => {
+          throw new Error(error);
+        });
+    });
+
     it('The correct response is returned when hitting a route on which an imposter is listening on', function () {
       const sampleRespnse = {
         'uri' : '/pets/123',

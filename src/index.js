@@ -5,6 +5,8 @@ const tcpPortUsed = require('tcp-port-used');
 
 exports.Imposter = require('./imposter');
 
+exports.Utils = require('./utils');
+
 exports.startMbServer = function (port) {
   return tcpPortUsed.check(port, '127.0.0.1')
   .then( function(inUse) {

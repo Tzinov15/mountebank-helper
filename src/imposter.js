@@ -460,6 +460,27 @@ class Imposter {
     return fetchReturnValue;
   }
 
+  /** CLIENT-FACING METHOD ||ASYNC-METHOD
+   * gets the existing imposter
+   * mountebank will return details on the deleted imposter upon a successful delete request
+   * @return {Promise}    we return a resolved promise containing the contents of the deleted imposter
+   */
+  getImposter() {
+    // make GET request to the mountebank server (through fetch)...
+    return fetch(`http://${this.ImposterInformation.mountebankHost}:${this.ImposterInformation.mountebankPort}/imposters/${this.ImposterInformation.imposterPort}`, {
+        method: 'GET'
+    })
+      .then(function (response) { // retrieve the text body from the response
+        return response.text();
+      })
+      .then(function (body) {
+        return body; // Return resolved promise containing text body from response
+      })
+      .catch(function (error) {
+        throw new Error(error);
+      });
+  }
+
   getStateResponse() {
     return this.ImposterInformation.routeInformation;
   }
